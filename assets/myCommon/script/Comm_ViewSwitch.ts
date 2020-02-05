@@ -242,6 +242,9 @@ export default class ViewSwitch extends cc.Component {
             view.instance.active = true;
         }
 
+        // 刷新view
+        view.component && view.component.flushView && view.component.flushView(data);
+
         if(callback){
             callback();
         }
@@ -261,8 +264,6 @@ export default class ViewSwitch extends cc.Component {
         let action = cc.sequence(
             moveIn,
             cc.callFunc(() => {
-                // 刷新view
-                view.component && view.component.flushView && view.component.flushView(data);
                 view.isMove = false;
                 // 关闭点击屏蔽
                 this._closeMask();

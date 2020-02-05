@@ -66,9 +66,6 @@ export default class FC_PlaneContronller extends Comm_ContronllerComponent {
             case COMMAND_FC_PLANE.set_skin :
                 this._setSkin(command);
                 break;
-            case COMMAND_FC_PLANE.set_pos :
-                this._setPos(command);
-                break;
             case COMMAND_FC_PLANE.play_anim:
                 this._playAnim(command);
                 break;
@@ -90,28 +87,9 @@ export default class FC_PlaneContronller extends Comm_ContronllerComponent {
             case COMMAND_FC_PLANE.resume:
                 this._resume();
                 break;
-            case COMMAND_FC_PLANE.set_active:
-                this._setActive(command);
-                break;
-            case COMMAND_FC_PLANE.set_zIndex:
-                this._setZIndex(command);
-                break;
             default:
                 break;
         }
-    };
-
-    /**
-     * 设置zIndex
-     * @param command 
-     */
-    private _setZIndex(command: Comm_Command){
-        if(!command.checkCommand(2)){
-            return;
-        }
-
-        let num = command.content;
-        this.node.zIndex = num;
     };
 
     /**
@@ -141,21 +119,6 @@ export default class FC_PlaneContronller extends Comm_ContronllerComponent {
         }
 
         this.planeSkinSprite.spriteFrame = this._planeSkinAssets[index];
-    };
-
-    /**
-     * 设置坐标位置
-     * @param command 
-     */
-    private _setPos(command: Comm_Command){
-        if(!command.checkCommand(2)){
-            return;
-        }
-
-        let pos = command.content;
-        if(pos instanceof cc.Vec2){
-            this.node.setPosition(pos);
-        }
     };
 
     /**
@@ -294,19 +257,6 @@ export default class FC_PlaneContronller extends Comm_ContronllerComponent {
     private _resume(){
         this.node.resumeAllActions();
         cc.director.getScheduler().resumeTarget(this);
-    };
-
-    /**
-     * 设置激活
-     * @param command 
-     */
-    private _setActive(command: Comm_Command){
-        if(!command.checkCommand(2)){
-            return;
-        }
-
-        let bool = !!command.content;
-        this.node.active = bool;
     };
 
     // 还原

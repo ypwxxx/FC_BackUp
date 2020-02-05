@@ -27,25 +27,21 @@ export default class FC_OverView extends cc.Component {
             this.rankBoard.addChild(item);
             let model = new FC_RankItemModel(i);
             Comm_Binder.getInstance().bindMC(model, item);
-            model.active = false;
+            model.active = false; 
 
             this._rankItems.push(model);
         }
     };
-
+  
     public flushView(data: any){
-        NOTIFICATION.emit(COMM_EVENT.OPEN_MASK);
-
         let count = data.length;
         for(let i = 0; i < 4; i++){
             let item = this._rankItems[i];
+            item.active = false;
             if(i < count){
                 item.active = true;
                 item.x = -1000;
                 item.flush(data[i]);
-
-            }else{
-                item.active = false;
 
             }
         }
@@ -55,6 +51,7 @@ export default class FC_OverView extends cc.Component {
 
     // 展示排行
     public showRank(){
+        NOTIFICATION.emit(COMM_EVENT.OPEN_MASK);
         for(let i = 0; i < this._rankItems.length; i++){
             let item = this._rankItems[i];
             let time = 0.05 * (i + 1);

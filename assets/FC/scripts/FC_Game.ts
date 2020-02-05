@@ -44,6 +44,8 @@ export default class FC_Game extends cc.Component {
     @property(cc.Prefab)
     boomAnimPrefab: cc.Prefab = null;               // 爆炸动画
 
+    public static DefaultFeatureValue = 0;          // 默认特征值
+
     private _planePool: cc.NodePool = null;                         // 飞机池
     private _playerPool: cc.NodePool = null;                        // 玩家对象池
     private _boomAnimPool: cc.NodePool = null;                      // 爆炸动画对象池
@@ -549,7 +551,7 @@ export default class FC_Game extends cc.Component {
                         cache.push(temp);
                         Comm_Log.log(`player${player.rotateIndex}-plane${tempPlane.index}: ${JSON.stringify(temp.featureValues)}`);
                         if(targetTasks === null || targetTasks.featureValues[index] <= temp.featureValues[index]){
-                            if(temp.featureValues[index] === -1 && targetPlane !== null){
+                            if(temp.featureValues[index] === FC_Game.DefaultFeatureValue && targetPlane !== null){
                                 let getValue = function(plane: FC_PlaneModel){
                                     let value = -1;
                                     if(plane.inInner){
@@ -578,7 +580,7 @@ export default class FC_Game extends cc.Component {
                     }
 
                     // 判断行为
-                    if(targetTasks.featureValues[index] === -1){
+                    if(targetTasks.featureValues[index] === FC_Game.DefaultFeatureValue){
                         // 从其他行为中随机
                         num = CommFunc.rand(100);
                         if(num < indexA){
@@ -810,6 +812,7 @@ export default class FC_Game extends cc.Component {
 
         let nums = [];
         for(let i = 0; i < planes.length; i++){
+            Comm_Log.log('排序：', i, planes[i].zIndex);
             nums.push(planes[i].zIndex);
         }
         nums.sort((a,b) => {
@@ -855,7 +858,7 @@ export default class FC_Game extends cc.Component {
                 return a.rank - b.rank;
             });
 
-            NOTIFICATION.emit(COMM_EVENT.SWITCH_VIEW, {name: 'over', data: rankData, type: VIEW_SWITCH_TYPE.MOVE_LEFT});
+            NOTIFICATION.emit(COMM_EVENT.SWITCH_VIEW, {name: 'over', data: rankData, type: VIEW_SWITCH_TYPE.HIDE});
         }
         return result;
     };
@@ -867,18 +870,19 @@ export default class FC_Game extends cc.Component {
      * @param diceNum number 骰子数
      */
     private _simulatePlaneMove(type: PLANE_TYPE, plane: FC_PlaneModel, diceNum: number): TaskObj{
+        let value = FC_Game.DefaultFeatureValue;
         let featureValueTable = [                                   // 特征值的表
-            [2, 3, 2],                                              // 1.可以到达终点 
-            [5, 7, 7],                                              // 2.可以进入内环 
-            [7, 6, 6],                                              // 3.可以撞到敌机-无自毁
-            [1, 1, 1],                                              // 4.可以跳  
-            [3, 5, 5],                                              // 5.可以飞行 
-            [4, 2, 3],                                              // 6.可以形成叠机 
-            [0, 4, 4],                                              // 7.可以离开停机坪
-            [6, 0, 0],                                              // 8.可以撞到敌机-会自毁
-        ]
+            [3, 4, 3],                                              // 1.可以到达终点 
+            [6, 8, 8],                                              // 2.可以进入内环 
+            [8, 7, 7],                                              // 3.可以撞到敌机-无自毁
+            [2, 2, 2],                                              // 4.可以跳  
+            [4, 6, 6],                                              // 5.可以飞行 
+            [5, 3, 4],                                              // 6.可以形成叠机 
+            [1, 5, 5],                                              // 7.可以离开停机坪
+            [7, 1, 1],                                              // 8.可以撞到敌机-会自毁
+        ];
         let taskArr: PlaneMoveSimpleTask[] = [];                    // 任务表
-        let featureValues: number[] = [-1, -1, -1];                 // 特征值
+        let featureValues: number[] = [value, value, value];        // 特征值
         let behaviors: number[] = [];                               // 行为组
         let stepNum = 0;                                            // 已经走的步数
         let curPoint: FC_ChessPoint = plane.point;                  // 当前棋点
@@ -1502,7 +1506,7 @@ export default class FC_Game extends cc.Component {
         let planeMaxCount = GAME_BASE_DATA.player_chesser_count;
         for(let i = 0; i < planeMaxCount; i++){
             // 新建飞机棋子
-            let index = Number(type) * planeMaxCount + i;
+            let index = Number(type) * planeMaxCount + i + 1;
             let plane = new FC_PlaneModel(type);
             group.push(plane);
             // 绑定

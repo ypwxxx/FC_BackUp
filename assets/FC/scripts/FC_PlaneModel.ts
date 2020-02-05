@@ -23,11 +23,9 @@ export default class FC_PlaneModel extends Comm_Model {
         RIGHT: 90,
     };
 
-    private _active: boolean = true;            // 是否激活
     private _zIndex: number = null;             // zIndex
     private _type: PLANE_TYPE = null;           // 类型 -- 皮肤会根据类型自动确定
     private _index: number = null;              // 序号 -- 飞机序号
-    private _position: cc.Vec2 = null;          // 位置
     private _direction: DIRECTION = null;       // 方向
     private _location: number = null;           // 在棋盘上的序号坐标
     private _stopPoint: FC_ChessPoint = null;   // 停驻点
@@ -48,12 +46,10 @@ export default class FC_PlaneModel extends Comm_Model {
      * 飞机是否激活
      */
     public get active(): boolean{
-        return this._active;
+        return this._contronller.node.active;
     };
     public set active(bool: boolean){
-        if(bool === this._active) return;
-        this._active = bool;
-        this.sendMessageToContronller(COMMAND_FC_PLANE.set_active, this._active);
+        this._contronller.node.active = bool;
     }
 
     /**
@@ -74,22 +70,22 @@ export default class FC_PlaneModel extends Comm_Model {
      * zIndex
      */
     public get zIndex(): number{
-        return this._zIndex;
+        return this._contronller.node.zIndex % GAME_BASE_DATA.plane_count;
     };
     public set zIndex(num: number){
-        this._zIndex = num;
-        this.sendMessageToContronller(COMMAND_FC_PLANE.set_zIndex, this._zIndex);
+        let index = num % GAME_BASE_DATA.plane_count;
+        this._contronller.node.zIndex = index;
+        this._zIndex = index;
     };
 
     /**
      * 位置
      */
     public get position(): cc.Vec2{
-        return this._position;
+        return this._contronller.node.getPosition();
     };
     public set position(pos: cc.Vec2){
-        this._position = pos;
-        this.sendMessageToContronller(COMMAND_FC_PLANE.set_pos, this._position);
+        this._contronller.node.setPosition(pos);
     };
 
     /**
@@ -140,13 +136,16 @@ export default class FC_PlaneModel extends Comm_Model {
     };
     public set isMoving(bool: boolean){
         this._isMoving = bool;
+        Comm_Log.log("渲染前： ", this.zIndex, '_zIndex', this._zIndex);
         if(bool){
-            this.sendMessageToContronller(COMMAND_FC_PLANE.set_zIndex, this._zIndex + GAME_BASE_DATA.plane_count);
+            this._contronller.node.zIndex = this._zIndex + GAME_BASE_DATA.plane_count;
 
         }else{
-            this.sendMessageToContronller(COMMAND_FC_PLANE.set_zIndex, this._zIndex);
+            this._contronller.node.zIndex = this._zIndex;
 
         }
+
+        Comm_Log.log(bool, '飞机渲染序号： ', this.zIndex, '_zIndex', this._zIndex);
     };
 
     /**
@@ -186,6 +185,7 @@ export default class FC_PlaneModel extends Comm_Model {
         this.point = this._stopPoint.clone();
 
         this.sendMessageToContronller(COMMAND_FC_PLANE.reset);
+        this.sendMessageToContronller(COMMAND_FC_PLANE.set_skin, this._type);
     };
 
     /**
@@ -375,9 +375,9 @@ export default class FC_PlaneModel extends Comm_Model {
     // 根据棋点刷新飞机位置状态
     private _flushStatuByPoint(point: FC_ChessPoint){
         // 更新属性
-        this._position = point.pos;
         this._direction = point.direction;
         this._location = point.index;
+        this.position = point.pos;
         this.point = point;
 
         // 更新位置状态

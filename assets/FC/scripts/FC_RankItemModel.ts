@@ -14,17 +14,17 @@ export default class FC_RankItemModel extends Comm_Model {
     private _rank: number = null;
     
     public get x(): number{
-        return this._contronller.x;
+        return this._contronller.node.x;
     };
     public set x(num: number){
-        this._contronller.x = num;
+        this._contronller.node.x = num;
     };
 
     public get active(): boolean{
-        return !!this._contronller.active;
+        return !!this._contronller.node.active;
     };
     public set active(bool: boolean){
-        this._contronller.active = bool;
+        this._contronller.node.active = bool;
     };
 
 

@@ -86,7 +86,7 @@ export default class FC_RankItemController extends Comm_ContronllerComponent {
         let planeType = data.planeType;
         this.nameLabel.string = name;
         this.iconSp.spriteFrame = this.assets.getSpriteFrame(ASSETS_NAME.head + iconIndex);
-        this.planeSp.spriteFrame = this.assets.getSpriteFrame(ASSETS_NAME.plane + planeType);
+        this.planeSp.spriteFrame = this.assets.getSpriteFrame(ASSETS_NAME.plane + planeType + '_0');
     };
 
     private _showRank(command: Comm_Command){

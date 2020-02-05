@@ -13,8 +13,8 @@ export const GAME_BASE_DATA = {
 
     plane_count: 16,                                // 飞机数量
 
-    plane_step_time: 0.2,                           // 飞机移动时间
-    plane_jump_time: 0.3,                           // 飞机跳跃时间
+    plane_step_time: 0.14,                           // 飞机移动时间
+    plane_jump_time: 0.24,                           // 飞机跳跃时间
     plane_fly_time: 0.4,                            // 飞机飞行时间
     plane_step_scale: 1.05,                         // 飞机移动缩放
     plane_jump_scale: 1.08,                         // 飞机跳跃缩放
@@ -114,11 +114,8 @@ export const COMMAND_FC_PLANE = {
     pause: 'fc_cod_plane_pause',                                    // 暂停
     resume: 'fc_cod_plane_resume',                                  // 恢复
     reset: 'fc_cod_plane_reset',                                    // 重置
-    set_active: 'fc_cod_plane_set_active',                          // 设置是否激活
     set_skin: 'fc_cod_plane_set_skin',                              // 设置皮肤
-    set_pos: 'fc_cod_plane_set_pos',                                // 设置位置
     set_rotation: 'fc_cod_plane_set_rotation',                      // 设置角度
-    set_zIndex: 'fc_cod_plane_set_zIndex',                          // 设置zIndex
     move_to: 'fc_cod_plane_move_to',                                // 移动
     play_anim: 'fc_cod_plane_play_anim',                            // 播放飞机动画
     stop_anim: 'fc_cod_plane_stop_anim',                            // 停止飞机动画
