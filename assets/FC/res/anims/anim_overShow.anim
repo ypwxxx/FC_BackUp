@@ -1,0 +1,125 @@
+{
+  "__type__": "cc.AnimationClip",
+  "_name": "anim_overShow",
+  "_objFlags": 0,
+  "_native": "",
+  "_duration": 0.5,
+  "sample": 60,
+  "speed": 1,
+  "wrapMode": "1",
+  "curveData": {
+    "paths": {
+      "node_title": {
+        "props": {
+          "y": [
+            {
+              "frame": 0,
+              "value": 1500
+            },
+            {
+              "frame": 0.3333333333333333,
+              "value": 440
+            },
+            {
+              "frame": 0.5,
+              "value": 500
+            }
+          ]
+        }
+      },
+      "btn_home": {
+        "props": {
+          "x": [
+            {
+              "frame": 0,
+              "value": -1270
+            },
+            {
+              "frame": 0.3333333333333333,
+              "value": -220
+            },
+            {
+              "frame": 0.5,
+              "value": -270
+            }
+          ]
+        }
+      },
+      "node_board": {
+        "props": {
+          "opacity": [
+            {
+              "frame": 0.25,
+              "value": 0
+            },
+            {
+              "frame": 0.4166666666666667,
+              "value": 255
+            }
+          ]
+        }
+      },
+      "btn_share": {
+        "props": {
+          "x": [
+            {
+              "frame": 0,
+              "value": -1139
+            },
+            {
+              "frame": 0.3333333333333333,
+              "value": -100
+            },
+            {
+              "frame": 0.5,
+              "value": -140
+            }
+          ]
+        }
+      },
+      "btn_challenge": {
+        "props": {
+          "x": [
+            {
+              "frame": 0,
+              "value": 1139
+            },
+            {
+              "frame": 0.3333333333333333,
+              "value": 100
+            },
+            {
+              "frame": 0.5,
+              "value": 140
+            }
+          ]
+        }
+      },
+      "btn_restart": {
+        "props": {
+          "y": [
+            {
+              "frame": 0,
+              "value": -1325
+            },
+            {
+              "frame": 0.3333333333333333,
+              "value": -300
+            },
+            {
+              "frame": 0.5,
+              "value": -325
+            }
+          ]
+        }
+      }
+    }
+  },
+  "events": [
+    {
+      "frame": 0.4166666666666667,
+      "func": "showRank",
+      "params": []
+    }
+  ]
+}
