@@ -68,6 +68,7 @@ export default class FC_Game extends cc.Component {
     private _pause: boolean = null;                                 // 暂停
 
     public onLoad(){
+        Comm_Log.log('---初始化加载---');
         // 是否开始log
         Comm_Log.isLog = true;
 
@@ -157,8 +158,8 @@ export default class FC_Game extends cc.Component {
 
     // 重置游戏(不重置绑定器)
     private _resetGame(){
-        console.time('reset');
         Comm_Log.log("---重置游戏---");
+        console.time('reset');
         // 重置游戏数据
         this._round = [1,0];                    // 回合数: 第一个回合第一个玩家开始
         this._stackPlanes = [
@@ -202,6 +203,7 @@ export default class FC_Game extends cc.Component {
 
     // 暂停游戏
     public pause(){
+        Comm_Log.log("---暂停游戏---");
         this._pause = true;
 
         this._pauseOrResume();
@@ -212,6 +214,7 @@ export default class FC_Game extends cc.Component {
 
     // 恢复游戏
     public resume(){
+        Comm_Log.log("---恢复游戏---");
         this._pause = false;
 
         this._pauseOrResume(1);
@@ -250,7 +253,7 @@ export default class FC_Game extends cc.Component {
             this._round[1] = 1;       // 玩家次序归为第一位
         }
 
-        Comm_Log.log("本回合: ", JSON.stringify(this._round));
+        Comm_Log.log("回合: ", JSON.stringify(this._round), '开始');
 
         // 根据次序数组,按序开始玩家的回合
         let index = this._round[1] - 1;
@@ -282,6 +285,7 @@ export default class FC_Game extends cc.Component {
         let planeIndex: number = obj.index;
         // 校验点击的飞机类型是否是正确的
         if(player.planeType === planeType){
+            Comm_Log.log("---选择飞机---");
             let planes = this._getPlanesByType(planeType);
             let plane = planes[planeIndex];
 
@@ -307,6 +311,7 @@ export default class FC_Game extends cc.Component {
      * @param obj 
      */
     private _crashPlanes(obj: any){
+        Comm_Log.log("---坠机---");
         let targetPoint: FC_ChessPoint = obj.point;
         let type: PLANE_TYPE = obj.type;
         for(let i = 0; i < GAME_BASE_DATA.player_max_count; i++){
@@ -346,7 +351,7 @@ export default class FC_Game extends cc.Component {
      * @param diceNum 骰子数
      */
     private _checkDiceNum(diceNum: number){
-        Comm_Log.log(`骰子: ${diceNum + 1}`);
+        Comm_Log.log(`---骰子: ${diceNum + 1}---`);
         this._lastDiceNum = diceNum;
         let player: FC_PlayerModel = this._playerOrderArr[this._round[1] - 1];          // 玩家
         let planeType = player.planeType;                                               // 飞机类型
@@ -438,7 +443,7 @@ export default class FC_Game extends cc.Component {
                 `);
                 return;
             }
-        }
+        }                                                                                          
 
         // 没有可走子飞机, 跳过本回合
         if(canMovePlanes.length === 0){
@@ -666,6 +671,7 @@ export default class FC_Game extends cc.Component {
      * 飞机移动结束
      */
     private _planeMoveEnd(obj: any){
+        Comm_Log.log(`---飞机移动结束---`);
         let player: FC_PlayerModel = this._playerOrderArr[this._round[1] - 1];
         let planeType: PLANE_TYPE = obj.type;
 
@@ -829,6 +835,7 @@ export default class FC_Game extends cc.Component {
     private _checkGameOver(){
         let result = false;
         if(FC_GameData.getInstance().playerCount === this._rankIndex){
+            Comm_Log.log(`---游戏结束---`);
             // 游戏结束
             result = true;
 

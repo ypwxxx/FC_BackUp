@@ -304,7 +304,7 @@ export default class FC_PlayerController extends Comm_ContronllerComponent {
         if(!this._rankFrames){
             this._rankFrames = [];
             for(let i = 0; i < 2; i++){
-                name = '' + ASSETS_NAME.rank + i;
+                name = '' + ASSETS_NAME.rank + (i + 1);
                 this._rankFrames.push(this.spriteAtlas.getSpriteFrame(name));
             }
         }

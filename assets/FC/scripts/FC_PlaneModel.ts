@@ -136,7 +136,6 @@ export default class FC_PlaneModel extends Comm_Model {
     };
     public set isMoving(bool: boolean){
         this._isMoving = bool;
-        Comm_Log.log("渲染前： ", this.zIndex, '_zIndex', this._zIndex);
         if(bool){
             this._contronller.node.zIndex = this._zIndex + GAME_BASE_DATA.plane_count;
 
@@ -144,8 +143,6 @@ export default class FC_PlaneModel extends Comm_Model {
             this._contronller.node.zIndex = this._zIndex;
 
         }
-
-        Comm_Log.log(bool, '飞机渲染序号： ', this.zIndex, '_zIndex', this._zIndex);
     };
 
     /**
@@ -263,6 +260,9 @@ export default class FC_PlaneModel extends Comm_Model {
             }
 
             // 切点
+            if(temp.point.isCutPoint){
+                Comm_Log.log('类型point: ',temp.point.type, 'plane type: ', this._type, 'step: ', this._forwardMoveStep);
+            }
             if(temp.point.isCutPoint && temp.point.type === this._type && this._forwardMoveStep >= 24){
                 rotate = this._getRotateByDirection(temp.point.cutDirection);
             }

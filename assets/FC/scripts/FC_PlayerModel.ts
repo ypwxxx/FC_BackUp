@@ -159,6 +159,7 @@ export default class FC_PlayerModel extends Comm_Model{
 
     // 开始本玩家的回合
     public startRound(){
+        Comm_Log.log(`---${this._playerName}的回合---`);
         let start = false;
 
         if(this.active && this._playerRank === -1){
@@ -183,6 +184,7 @@ export default class FC_PlayerModel extends Comm_Model{
 
     // 结束本玩家的回合
     public endRound(){
+        Comm_Log.log(`---${this._playerName}的回合结束---`);
         this._canTouchDice = false;
 
         this.sendMessageToContronller(COMMAND_FC_PLAYER.end_round);
@@ -213,6 +215,7 @@ export default class FC_PlayerModel extends Comm_Model{
 
     // 投骰子
     public throwDice(){
+        Comm_Log.log(`---${this._playerName}投掷骰子---`);
         // 正准备投掷骰子,此时不可点击
         this._canTouchDice = false;
 
@@ -271,6 +274,7 @@ export default class FC_PlayerModel extends Comm_Model{
 
     // 投掷结束
     private _throwEnd(){
+        Comm_Log.log(`---${this._playerName}的投掷结束---`);
         // 向游戏全局发送投掷结束信息
         NOTIFICATION.emit(FC_EVENT.PLAYER_DICE_NUM, this._diceResults[this._diceResults.length - 1]);
     };

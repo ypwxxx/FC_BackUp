@@ -90,10 +90,6 @@ export default class FC_RankItemController extends Comm_ContronllerComponent {
     };
 
     private _showRank(command: Comm_Command){
-        if(!command.checkCommand(2)){
-            return;
-        }
-
         this.animation.play();
     };
 
