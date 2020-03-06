@@ -1,8 +1,8 @@
-import Comm_ContronllerComponent from "../../myCommon/script/Comm_ContronllerComponent";
-import { COMMAND_FC_PLANE, PLANE_TYPE, GAME_BASE_DATA, ASSETS_NAME } from "./FC_Constant";
-import Comm_Command from "../../myCommon/script/Comm_Command";
-import Comm_Log from "../../myCommon/script/Comm_Log";
-import { PlaneMoveTask } from "./FC_Interface";
+import Comm_ContronllerCop from "../../myCommon/core/m_c/Comm_ContronllerCop";
+import { COMMAND_FC_PLANE, FC_PLANE_TYPE, FC_GAME_BASE_DATA, FC_ASSETS_NAME } from "./FC_Constant";
+import Comm_Command from "../../myCommon/core/m_c/Comm_Command";
+import Comm_Log from "../../myCommon/utils/Comm_Log";
+import { FC_PlaneMoveTask } from "./FC_Interface";
 
 /**
  * 飞机控制类
@@ -10,7 +10,7 @@ import { PlaneMoveTask } from "./FC_Interface";
 const {ccclass, property} = cc._decorator;
 
 @ccclass
-export default class FC_PlaneContronller extends Comm_ContronllerComponent {
+export default class FC_PlaneContronller extends Comm_ContronllerCop {
 
     @property(cc.Sprite)
     planeSkinSprite: cc.Sprite = null;                  // 飞机皮肤
@@ -104,18 +104,21 @@ export default class FC_PlaneContronller extends Comm_ContronllerComponent {
         let type = command.content;
         let index = 0;
 
-        if(type === PLANE_TYPE.THE_RED){
+        if(type === FC_PLANE_TYPE.THE_RED){
             index = 0;
 
-        }else if(type === PLANE_TYPE.THE_YELLOW){
+        }else if(type === FC_PLANE_TYPE.THE_YELLOW){
             index = 1;
 
-        }else if(type === PLANE_TYPE.THE_BLUE){
+        }else if(type === FC_PLANE_TYPE.THE_BLUE){
             index = 2;
 
-        }else if(type === PLANE_TYPE.THE_GREEN){
+        }else if(type === FC_PLANE_TYPE.THE_GREEN){
             index = 3;
 
+        }else if(type === FC_PLANE_TYPE.THE_END){
+            index = 4;
+            this.node.rotation = 0;
         }
 
         this.planeSkinSprite.spriteFrame = this._planeSkinAssets[index];
@@ -146,7 +149,7 @@ export default class FC_PlaneContronller extends Comm_ContronllerComponent {
         }
 
         let name: string = command.content;
-        if(name === GAME_BASE_DATA.plane_standby_act){
+        if(name === FC_GAME_BASE_DATA.plane_standby_act){
             let act = cc.repeatForever(cc.sequence(
                 cc.scaleTo(0.8, 1.2),
                 cc.scaleTo(0.8, 1.0),
@@ -169,7 +172,7 @@ export default class FC_PlaneContronller extends Comm_ContronllerComponent {
         }
 
         let name: string = command.content;
-        if(name === GAME_BASE_DATA.plane_standby_act){
+        if(name === FC_GAME_BASE_DATA.plane_standby_act){
             this.node.setScale(1);
             this.node.stopActionByTag(this._standByActionTag);
         }
@@ -184,17 +187,21 @@ export default class FC_PlaneContronller extends Comm_ContronllerComponent {
             return;
         }
 
-        let task: PlaneMoveTask = command.content;
+        let task: FC_PlaneMoveTask = command.content;
         let pos = task.point.pos;
         let rotate = task.rotation;
         let time = task.time;
+        let delayTime = 0.05;           // 每次移动后的延迟时间
         //回退模式
         if(task.isBack){
-            time = 0.1;
+            time = 0.08;
         }
+
+        Comm_Log.log(`飞行时间：${time}`);
+
         let act = cc.sequence(
             cc.moveTo(time, pos),
-            cc.delayTime(0.1),
+            cc.delayTime(delayTime),
         )
 
         // 判断是否需要旋转角度
@@ -202,7 +209,7 @@ export default class FC_PlaneContronller extends Comm_ContronllerComponent {
             act = cc.sequence(
                 cc.moveTo(time, pos),
                 cc.rotateTo(0.1, rotate).easing(cc.easeCubicActionOut()),
-                cc.delayTime(0.1),
+                cc.delayTime(delayTime),
             )
         }
 
@@ -279,11 +286,11 @@ export default class FC_PlaneContronller extends Comm_ContronllerComponent {
 
             let name = '';
             for(let i = 0; i < 4; i++){
-                name = '' + ASSETS_NAME.plane + i + '_0';
+                name = '' + FC_ASSETS_NAME.plane + i + '_0';
                 this._planeSkinAssets.push(this.spriteAtlas.getSpriteFrame(name));
             }
 
-            name = '' + ASSETS_NAME.plane_finish;
+            name = '' + FC_ASSETS_NAME.plane_finish;
             this._planeSkinAssets.push(this.spriteAtlas.getSpriteFrame(name));
         }
     };

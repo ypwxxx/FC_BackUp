@@ -1,13 +1,13 @@
-import Comm_ContronllerComponent from "../../myCommon/script/Comm_ContronllerComponent";
-import Comm_Command from "../../myCommon/script/Comm_Command";
-import Comm_Log from "../../myCommon/script/Comm_Log";
-import { COMMAND_FC_RANK, ASSETS_NAME } from "./FC_Constant";
+import Comm_ContronllerCop from "../../myCommon/core/m_c/Comm_ContronllerCop";
+import Comm_Command from "../../myCommon/core/m_c/Comm_Command";
+import Comm_Log from "../../myCommon/utils/Comm_Log";
+import { COMMAND_FC_RANK, FC_ASSETS_NAME } from "./FC_Constant";
 
 // 排行榜组件控制器
 const {ccclass, property} = cc._decorator;
 
 @ccclass
-export default class FC_RankItemController extends Comm_ContronllerComponent {
+export default class FC_RankItemController extends Comm_ContronllerCop {
 
     @property(cc.Animation)
     animation: cc.Animation = null;
@@ -56,11 +56,11 @@ export default class FC_RankItemController extends Comm_ContronllerComponent {
         switch(rank){
             case 0:
                 this.rankIndexSp.node.active = true;
-                this.rankIndexSp.spriteFrame = this.assets.getSpriteFrame(ASSETS_NAME.rank + '1');
+                this.rankIndexSp.spriteFrame = this.assets.getSpriteFrame(FC_ASSETS_NAME.rank + '1');
                 break;
             case 1:
                 this.rankIndexSp.node.active = true;
-                this.rankIndexSp.spriteFrame = this.assets.getSpriteFrame(ASSETS_NAME.rank + '2');
+                this.rankIndexSp.spriteFrame = this.assets.getSpriteFrame(FC_ASSETS_NAME.rank + '2');
                 break;
             case 2:
                 this.rankIndexLabel.node.active = true;
@@ -85,8 +85,8 @@ export default class FC_RankItemController extends Comm_ContronllerComponent {
         let iconIndex = data.iconIndex;
         let planeType = data.planeType;
         this.nameLabel.string = name;
-        this.iconSp.spriteFrame = this.assets.getSpriteFrame(ASSETS_NAME.head + iconIndex);
-        this.planeSp.spriteFrame = this.assets.getSpriteFrame(ASSETS_NAME.plane + planeType + '_0');
+        this.iconSp.spriteFrame = this.assets.getSpriteFrame(FC_ASSETS_NAME.head + iconIndex);
+        this.planeSp.spriteFrame = this.assets.getSpriteFrame(FC_ASSETS_NAME.plane + planeType + '_0');
     };
 
     private _showRank(command: Comm_Command){

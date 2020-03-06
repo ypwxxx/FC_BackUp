@@ -1,17 +1,17 @@
-import { PLANE_TYPE, DIRECTION, COMMAND_FC_PLANE, FC_EVENT, GAME_BASE_DATA, PLANE_MOVE_TYPE } from "./FC_Constant";
-import Comm_Model from "../../myCommon/script/Comm_Model";
-import Comm_Command from "../../myCommon/script/Comm_Command";
+import { FC_PLANE_TYPE, FC_DIRECTION, COMMAND_FC_PLANE, FC_EVENT, FC_GAME_BASE_DATA, FC_PLANE_MOVE_TYPE } from "./FC_Constant";
+import Comm_Model from "../../myCommon/core/m_c/Comm_Model";
+import Comm_Command from "../../myCommon/core/m_c/Comm_Command";
 import FC_ChessPoint from "./FC_ChessPoint";
-import Comm_Log from "../../myCommon/script/Comm_Log";
-import { NOTIFICATION } from "../../myCommon/script/Comm_Modules";
-import { PlaneMoveTask, PlaneMoveSimpleTask } from "./FC_Interface";
+import Comm_Log from "../../myCommon/utils/Comm_Log";
+import NOTIFICATION from "../../myCommon/core/event/NOTIFICATION";
+import { FC_PlaneMoveTask, FC_PlaneMoveSimpleTask } from "./FC_Interface";
 
 /**
  * 飞机类模块
  */
 
 export default class FC_PlaneModel extends Comm_Model {
-    public constructor(type: PLANE_TYPE){
+    public constructor(type: FC_PLANE_TYPE){
         super();
         this._type = type;
     };
@@ -24,13 +24,13 @@ export default class FC_PlaneModel extends Comm_Model {
     };
 
     private _zIndex: number = null;             // zIndex
-    private _type: PLANE_TYPE = null;           // 类型 -- 皮肤会根据类型自动确定
+    private _type: FC_PLANE_TYPE = null;           // 类型 -- 皮肤会根据类型自动确定
     private _index: number = null;              // 序号 -- 飞机序号
-    private _direction: DIRECTION = null;       // 方向
+    private _direction: FC_DIRECTION = null;       // 方向
     private _location: number = null;           // 在棋盘上的序号坐标
     private _stopPoint: FC_ChessPoint = null;   // 停驻点
     private _canTouch: boolean = false;         // 可否点击
-    private _taskArr: PlaneMoveTask[] = null;   // 移动任务列表
+    private _taskArr: FC_PlaneMoveTask[] = null;   // 移动任务列表
     private _moveTaskIndex: number = null;      // 移动任务序号
     private _forwardMoveStep: number = null;    // 向前移动的步数
     private _isMoving: boolean = null;          // 移动中
@@ -55,7 +55,7 @@ export default class FC_PlaneModel extends Comm_Model {
     /**
      * 类型
      */
-    public get type(): PLANE_TYPE{
+    public get type(): FC_PLANE_TYPE{
         return this._type;
     }
 
@@ -70,10 +70,10 @@ export default class FC_PlaneModel extends Comm_Model {
      * zIndex
      */
     public get zIndex(): number{
-        return this._contronller.node.zIndex % GAME_BASE_DATA.plane_count;
+        return this._contronller.node.zIndex % FC_GAME_BASE_DATA.plane_count;
     };
     public set zIndex(num: number){
-        let index = num % GAME_BASE_DATA.plane_count;
+        let index = num % FC_GAME_BASE_DATA.plane_count;
         this._contronller.node.zIndex = index;
         this._zIndex = index;
     };
@@ -91,10 +91,10 @@ export default class FC_PlaneModel extends Comm_Model {
     /**
      * 方向
      */
-    public get direction(): DIRECTION{
+    public get direction(): FC_DIRECTION{
         return this._direction;
     };
-    public set direction(dir: DIRECTION){
+    public set direction(dir: FC_DIRECTION){
         this._direction = dir;
         let rotation = this._getRotateByDirection(this.direction);
         this.sendMessageToContronller(COMMAND_FC_PLANE.set_rotation, rotation);
@@ -137,13 +137,20 @@ export default class FC_PlaneModel extends Comm_Model {
     public set isMoving(bool: boolean){
         this._isMoving = bool;
         if(bool){
-            this._contronller.node.zIndex = this._zIndex + GAME_BASE_DATA.plane_count;
+            this._contronller.node.zIndex = this._zIndex + FC_GAME_BASE_DATA.plane_count;
 
         }else{
             this._contronller.node.zIndex = this._zIndex;
 
         }
     };
+
+    /**
+     * 返回前进数
+     */
+    public get moveStep(): number {
+        return this._forwardMoveStep;
+    }
 
     /**
      * 初始化
@@ -186,6 +193,21 @@ export default class FC_PlaneModel extends Comm_Model {
     };
 
     /**
+     * 加载存档
+     */
+    public loadSave(data: any){
+        this._forwardMoveStep = data.moveStep;
+        this._flushStatuByPoint(data.point);
+        this.position = data.pos;
+
+        if(data.isFinish){
+            this.inEndArea = true;
+            this.inStopArea = false;
+            this.sendMessageToContronller(COMMAND_FC_PLANE.set_skin, FC_PLANE_TYPE.THE_END);
+        }
+    };
+
+    /**
      * 暂停
      */
     public pause(){
@@ -204,7 +226,7 @@ export default class FC_PlaneModel extends Comm_Model {
      */
     public standby(){
         this._canTouch = true;
-        this.sendMessageToContronller(COMMAND_FC_PLANE.play_anim, GAME_BASE_DATA.plane_standby_act);
+        this.sendMessageToContronller(COMMAND_FC_PLANE.play_anim, FC_GAME_BASE_DATA.plane_standby_act);
     };
 
     /**
@@ -212,17 +234,17 @@ export default class FC_PlaneModel extends Comm_Model {
      */
     public stopStandby(){
         this._canTouch = false;
-        this.sendMessageToContronller(COMMAND_FC_PLANE.stop_anim, GAME_BASE_DATA.plane_standby_act);
+        this.sendMessageToContronller(COMMAND_FC_PLANE.stop_anim, FC_GAME_BASE_DATA.plane_standby_act);
     };
 
     /**
      * 返回停驻区
      */
     public backToStopArea(isTarget: boolean = false){
-        let data: PlaneMoveSimpleTask[] = [
+        let data: FC_PlaneMoveSimpleTask[] = [
             {
                 point: this._stopPoint,
-                moveType: PLANE_MOVE_TYPE.STEP,
+                moveType: FC_PLANE_MOVE_TYPE.STEP,
                 isTarget: isTarget
             }
         ];
@@ -231,9 +253,9 @@ export default class FC_PlaneModel extends Comm_Model {
 
     /**
      * 移动
-     * @param taskArr PlaneMoveSimpleTask
+     * @param taskArr FC_PlaneMoveSimpleTask
      */
-    public moveTo(taskArr: PlaneMoveSimpleTask[]){
+    public moveTo(taskArr: FC_PlaneMoveSimpleTask[]){
         this._canTouch = false;
         this._taskArr = [];
         this._moveTaskIndex = 0;
@@ -241,8 +263,8 @@ export default class FC_PlaneModel extends Comm_Model {
         for(let i = 0; i < taskArr.length; i++){
             let temp = taskArr[i];
             let rotate = this._getRotateByDirection(temp.point.direction);
-            let scale = GAME_BASE_DATA.plane_step_scale;
-            let time = GAME_BASE_DATA.plane_step_time;
+            let scale = FC_GAME_BASE_DATA.plane_step_scale;
+            let time = FC_GAME_BASE_DATA.plane_step_time;
             let isEnd = temp.isEnd ? true : false;
             let isCrash = temp.isCrash ? true : false;
             let isBack = temp.isBack ? true : false;
@@ -250,13 +272,13 @@ export default class FC_PlaneModel extends Comm_Model {
             let isFlyCenter = temp.isFlyCenter ? true : false;
             let isTarget = temp.isTarget ? true : false;
 
-            if(temp.moveType === PLANE_MOVE_TYPE.JUMP){
-                scale = GAME_BASE_DATA.plane_jump_scale;
-                time = GAME_BASE_DATA.plane_jump_time;
+            if(temp.moveType === FC_PLANE_MOVE_TYPE.JUMP){
+                scale = FC_GAME_BASE_DATA.plane_jump_scale;
+                time = FC_GAME_BASE_DATA.plane_jump_time;
 
-            }else if(temp.moveType === PLANE_MOVE_TYPE.FLY){
-                scale = GAME_BASE_DATA.plane_fly_scale;
-                time = GAME_BASE_DATA.plane_fly_time;
+            }else if(temp.moveType === FC_PLANE_MOVE_TYPE.FLY){
+                scale = FC_GAME_BASE_DATA.plane_fly_scale;
+                time = FC_GAME_BASE_DATA.plane_fly_time;
             }
 
             // 切点
@@ -278,7 +300,7 @@ export default class FC_PlaneModel extends Comm_Model {
                 }
             }
 
-            let task: PlaneMoveTask = {
+            let task: FC_PlaneMoveTask = {
                 point: temp.point,
                 rotation: rotate,
                 time: time,
@@ -290,7 +312,7 @@ export default class FC_PlaneModel extends Comm_Model {
                 isFlyCenter: isFlyCenter,
                 isTarget: isTarget,
             };
-            this._taskArr.push(task);
+            this._taskArr.push(task); 
         }
 
         this.sendMessageToContronller(COMMAND_FC_PLANE.move_to, this._taskArr[this._moveTaskIndex]);
@@ -325,7 +347,7 @@ export default class FC_PlaneModel extends Comm_Model {
         // 刷新状态
         let task = this._taskArr[this._moveTaskIndex];
         
-        this._flushStatuByPoint(task.point);
+        this._flushStatuByPoint(task.point, task.isEnd);
 
         // 向前
         if(task.isBack){
@@ -373,9 +395,17 @@ export default class FC_PlaneModel extends Comm_Model {
     };
 
     // 根据棋点刷新飞机位置状态
-    private _flushStatuByPoint(point: FC_ChessPoint){
+    private _flushStatuByPoint(point: FC_ChessPoint, isEnd: boolean = false){
         // 更新属性
-        this._direction = point.direction;
+        if(point.isCutPoint && point.type === this._type && this._forwardMoveStep >= 24){
+            this.direction = point.cutDirection;
+        }else if(isEnd){
+            this.direction = FC_DIRECTION.UP;
+        }else if(point.isFlyStartPoint){
+            this._direction = point.direction;
+        }else{
+            this.direction = point.direction;
+        }
         this._location = point.index;
         this.position = point.pos;
         this.point = point;
@@ -403,19 +433,19 @@ export default class FC_PlaneModel extends Comm_Model {
     };
 
     // 根据方向返回角度
-    private _getRotateByDirection(dir: DIRECTION){
+    private _getRotateByDirection(dir: FC_DIRECTION){
         let rotation = null;
 
-        if(dir === DIRECTION.UP){
+        if(dir === FC_DIRECTION.UP){
             rotation = FC_PlaneModel.PLANE_DIRECTION.UP;
 
-        }else if(dir === DIRECTION.DOWN){
+        }else if(dir === FC_DIRECTION.DOWN){
             rotation = FC_PlaneModel.PLANE_DIRECTION.DOWN;
 
-        }else if(dir === DIRECTION.LEFT){
+        }else if(dir === FC_DIRECTION.LEFT){
             rotation = FC_PlaneModel.PLANE_DIRECTION.LEFT;
 
-        }else if(dir === DIRECTION.RIGHT){
+        }else if(dir === FC_DIRECTION.RIGHT){
             rotation = FC_PlaneModel.PLANE_DIRECTION.RIGHT;
 
         }
@@ -425,19 +455,19 @@ export default class FC_PlaneModel extends Comm_Model {
 
     // 根据角度返回方向
     private _getDirectionByRotate(rotate: number){
-        let dir: DIRECTION = null;
+        let dir: FC_DIRECTION = null;
 
         if(rotate === FC_PlaneModel.PLANE_DIRECTION.UP){
-            dir = DIRECTION.UP;
+            dir = FC_DIRECTION.UP;
 
         }else if(rotate === FC_PlaneModel.PLANE_DIRECTION.DOWN){
-            dir = DIRECTION.DOWN;
+            dir = FC_DIRECTION.DOWN;
 
         }else if(rotate === FC_PlaneModel.PLANE_DIRECTION.LEFT){
-            dir = DIRECTION.LEFT;
+            dir = FC_DIRECTION.LEFT;
 
         }else if(rotate === FC_PlaneModel.PLANE_DIRECTION.RIGHT){
-            dir = DIRECTION.RIGHT;
+            dir = FC_DIRECTION.RIGHT;
 
         }
 

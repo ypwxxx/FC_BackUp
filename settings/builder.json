@@ -35,12 +35,12 @@
     "orientation": "portrait",
     "zip": false
   },
-  "startScene": "01c96a11-5bce-438a-9d2d-aebe04544905",
+  "startScene": "643037a6-6468-4056-991a-718748d0e87c",
   "title": "FC_New",
   "webOrientation": "auto",
   "wechatgame": {
     "REMOTE_SERVER_ROOT": "",
-    "appid": "wx6ac3f5090a6b99c5",
+    "appid": "wxecd0b204cc0cca86",
     "orientation": "portrait",
     "separate_engine": false,
     "subContext": ""

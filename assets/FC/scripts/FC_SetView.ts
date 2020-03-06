@@ -1,7 +1,8 @@
 import FC_GameData from "./FC_GameData";
-import { NOTIFICATION } from "../../myCommon/script/Comm_Modules";
-import { FC_EVENT, PLANE_TYPE, PLAYER_TYPE, ASSETS_NAME } from "./FC_Constant";
-import { COMM_EVENT, VIEW_SWITCH_TYPE } from "../../myCommon/script/Comm_Enum";
+import NOTIFICATION from "../../myCommon/core/event/NOTIFICATION";
+import { FC_EVENT, FC_PLANE_TYPE, FC_PLAYER_TYPE, FC_ASSETS_NAME, FC_NAME_VIEW } from "./FC_Constant";
+import { COMM_EVENT, VIEW_SWITCH_TYPE } from "../../myCommon/Comm_Constant";
+import Comm_Main from "../../myCommon/Comm_Main";
 
 /**
  * 设置游戏页面
@@ -117,22 +118,22 @@ export default class FC_SetView extends cc.Component {
         for(let i = 0; i < this._playerSetObj.length; i++){
             if(this._playerSetObj[i] > 0){
                 if(i == 0){
-                    planeTypes.push(PLANE_TYPE.THE_RED);
+                    planeTypes.push(FC_PLANE_TYPE.THE_RED);
                 }else if(i == 1){
-                    planeTypes.push(PLANE_TYPE.THE_YELLOW);
+                    planeTypes.push(FC_PLANE_TYPE.THE_YELLOW);
                 }else if(i == 2){
-                    planeTypes.push(PLANE_TYPE.THE_BLUE);
+                    planeTypes.push(FC_PLANE_TYPE.THE_BLUE);
                 }else if(i == 3){
-                    planeTypes.push(PLANE_TYPE.THE_GREEN);
+                    planeTypes.push(FC_PLANE_TYPE.THE_GREEN);
                 }
 
                 if(this._playerSetObj[i] === 2){
-                    playerTypes.push(PLAYER_TYPE.AI);
+                    playerTypes.push(FC_PLAYER_TYPE.AI);
                 }else if(this._playerSetObj[i] === 1){
-                    playerTypes.push(PLAYER_TYPE.OFFLINE);
+                    playerTypes.push(FC_PLAYER_TYPE.OFFLINE);
                 }
             }else{
-                playerTypes.push(PLAYER_TYPE.NONE);
+                playerTypes.push(FC_PLAYER_TYPE.NONE);
             }
         }
 
@@ -142,7 +143,7 @@ export default class FC_SetView extends cc.Component {
         // 检查是否是游戏页面
         let scene = cc.director.getScene();
         if(scene.name == "FC_GameScene"){
-            NOTIFICATION.emit(COMM_EVENT.SWITCH_VIEW, 'main');
+            Comm_Main.switchView(FC_NAME_VIEW.main);
             NOTIFICATION.emit(FC_EVENT.GAME_RESTART);
         }else{
             cc.director.loadScene("FC_GameScene");
@@ -151,7 +152,7 @@ export default class FC_SetView extends cc.Component {
 ;
     // 返回
     public btn_back(){
-        NOTIFICATION.emit(COMM_EVENT.SWITCH_VIEW, {name: 'set', type: VIEW_SWITCH_TYPE.MOVE_LEFT, solo: false});
+        Comm_Main.switchView({name: FC_NAME_VIEW.set, type: VIEW_SWITCH_TYPE.MOVE_LEFT, solo: false});
     };
 
     // 检查玩家类型 0: 无 1: 电脑 2: 玩家
@@ -180,7 +181,7 @@ export default class FC_SetView extends cc.Component {
         if(!this._launchNumLightSpFrames){
             this._launchNumLightSpFrames = [];
             for(let i = 0; i < 3; i++){
-                let name = '' + ASSETS_NAME.launch_num_light + i;
+                let name = '' + FC_ASSETS_NAME.launch_num_light + i;
                 this._launchNumLightSpFrames.push(this.spriteAtlas.getSpriteFrame(name));
             }
         }
@@ -188,7 +189,7 @@ export default class FC_SetView extends cc.Component {
         if(!this._launchNumGreySpFrames){
             this._launchNumGreySpFrames = [];
             for(let i = 0; i < 3; i++){
-                let name = '' + ASSETS_NAME.launch_num_grey + i;
+                let name = '' + FC_ASSETS_NAME.launch_num_grey + i;
                 this._launchNumGreySpFrames.push(this.spriteAtlas.getSpriteFrame(name));
             }
         }

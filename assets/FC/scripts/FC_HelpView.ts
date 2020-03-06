@@ -1,5 +1,6 @@
-import { NOTIFICATION } from "../../myCommon/script/Comm_Modules";
-import { COMM_EVENT, VIEW_SWITCH_TYPE } from "../../myCommon/script/Comm_Enum";
+import { VIEW_SWITCH_TYPE } from "../../myCommon/Comm_Constant";
+import { FC_NAME_VIEW } from "./FC_Constant";
+import Comm_Main from "../../myCommon/Comm_Main";
 
 const {ccclass, property} = cc._decorator;
 
@@ -75,7 +76,7 @@ export default class FC_HelpView extends cc.Component {
     };
 
     public skip(){
-        NOTIFICATION.emit(COMM_EVENT.SWITCH_VIEW, {name: 'help', type: VIEW_SWITCH_TYPE.MOVE_RIGHT, solo: false});
+        Comm_Main.switchView({name: FC_NAME_VIEW.help, type: VIEW_SWITCH_TYPE.MOVE_RIGHT, solo: false});
     };
 
     private _touchEnd(){

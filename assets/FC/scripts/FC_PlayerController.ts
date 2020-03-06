@@ -1,8 +1,8 @@
-import Comm_ContronllerComponent from "../../myCommon/script/Comm_ContronllerComponent";
-import Comm_Command from "../../myCommon/script/Comm_Command";
-import Comm_Log from "../../myCommon/script/Comm_Log";
-import { COMMAND_FC_PLAYER, PLANE_TYPE, ASSETS_NAME } from "./FC_Constant";
-import { CommFunc } from "../../myCommon/script/Comm_Modules";
+import Comm_ContronllerCop from "../../myCommon/core/m_c/Comm_ContronllerCop";
+import Comm_Command from "../../myCommon/core/m_c/Comm_Command";
+import Comm_Log from "../../myCommon/utils/Comm_Log";
+import { COMMAND_FC_PLAYER, FC_PLANE_TYPE, FC_ASSETS_NAME } from "./FC_Constant";
+import CommFunc from "../../myCommon/utils/CommFunc";
 
 /**
  * 玩家控制类
@@ -11,7 +11,7 @@ import { CommFunc } from "../../myCommon/script/Comm_Modules";
 const {ccclass, property} = cc._decorator;
 
 @ccclass
-export default class FC_PlayerController extends Comm_ContronllerComponent {
+export default class FC_PlayerController extends Comm_ContronllerCop {
 
     @property(cc.Label)
     playerName: cc.Label = null;
@@ -29,6 +29,7 @@ export default class FC_PlayerController extends Comm_ContronllerComponent {
     @property(cc.SpriteAtlas)
     spriteAtlas: cc.SpriteAtlas = null;
 
+    private _spName: string = null;
     private _arrowBasePos: cc.Vec2 = null;
     private _iconGreyFrame: cc.SpriteFrame = null;
     private _uiGreyFrame: cc.SpriteFrame = null;
@@ -36,7 +37,6 @@ export default class FC_PlayerController extends Comm_ContronllerComponent {
     private _iconFrames: cc.SpriteFrame[] = null;
     private _rankFrames: cc.SpriteFrame[] = null;
     private _throwEnd: Function = null;
-
 
     public reuse(pos: cc.Vec2, index: number){
         this.node.setPosition(pos);
@@ -51,8 +51,8 @@ export default class FC_PlayerController extends Comm_ContronllerComponent {
             this.arrowNode.scaleX = -1;
         }
 
-        let name = '' + ASSETS_NAME.head_bg + index;
-        this.uiSp.spriteFrame = this.spriteAtlas.getSpriteFrame(name);
+        this._spName = '' + FC_ASSETS_NAME.head_bg + index;
+        this.uiSp.spriteFrame = this.spriteAtlas.getSpriteFrame(this._spName);
         this._throwEnd = function(){
             this.sendMessageToModel(COMMAND_FC_PLAYER.feedback_throw_end);
         };
@@ -182,7 +182,8 @@ export default class FC_PlayerController extends Comm_ContronllerComponent {
 
         let name: string = command.content.name;
         let iconIndex: number = command.content.iconIndex;
-        let planeType: PLANE_TYPE = command.content.planeType;
+        let planeType: FC_PLANE_TYPE = command.content.planeType;
+        let rank: number = command.content.rank;
         let scaleX = -1;
 
         this.playerName.string = name;
@@ -190,10 +191,12 @@ export default class FC_PlayerController extends Comm_ContronllerComponent {
             this.playerIcon.spriteFrame = this._iconGreyFrame;
             this.uiSp.spriteFrame = this._uiGreyFrame;
 
-            if(planeType === PLANE_TYPE.THE_RED || planeType === PLANE_TYPE.THE_YELLOW){
+            if(planeType === FC_PLANE_TYPE.THE_RED || planeType === FC_PLANE_TYPE.THE_YELLOW){
                 scaleX = 1;
             }
+
         }else{
+            this.uiSp.spriteFrame = this.spriteAtlas.getSpriteFrame(this._spName);
             this.playerIcon.spriteFrame = this._iconFrames[iconIndex];
         }
         this.uiSp.node.scaleX = scaleX;
@@ -210,6 +213,12 @@ export default class FC_PlayerController extends Comm_ContronllerComponent {
         // 记录下箭头的起始位置
         if(!this._arrowBasePos){
             this._arrowBasePos = this.arrowNode.getPosition().clone();
+        }
+
+        if(rank == 1){
+            this.rankSp.spriteFrame = this._rankFrames[0];
+        }else if(rank == 2){
+            this.rankSp.spriteFrame = this._rankFrames[1];
         }
     };
 
@@ -280,31 +289,31 @@ export default class FC_PlayerController extends Comm_ContronllerComponent {
     private _checkAndSetAssets(){
         let name = '';
         if(!this._iconGreyFrame){
-            name = '' + ASSETS_NAME.head_grey;
+            name = '' + FC_ASSETS_NAME.head_grey;
             this._iconGreyFrame = this.spriteAtlas.getSpriteFrame(name);
         }
         if(!this._uiGreyFrame){
-            name = '' + ASSETS_NAME.player_bg_default;
+            name = '' + FC_ASSETS_NAME.player_bg_default;
             this._uiGreyFrame = this.spriteAtlas.getSpriteFrame(name);
         }
         if(!this._diceFrames){
             this._diceFrames = [];
             for(let i = 1; i <= 6; i++){
-                name = '' + ASSETS_NAME.dice + i;
+                name = '' + FC_ASSETS_NAME.dice + i;
                 this._diceFrames.push(this.spriteAtlas.getSpriteFrame(name));
             }
         }
         if(!this._iconFrames){
             this._iconFrames = [];
             for(let i = 0; i < 11; i++){
-                name = '' + ASSETS_NAME.head + i;
+                name = '' + FC_ASSETS_NAME.head + i;
                 this._iconFrames.push(this.spriteAtlas.getSpriteFrame(name));
             }
         }
         if(!this._rankFrames){
             this._rankFrames = [];
             for(let i = 0; i < 2; i++){
-                name = '' + ASSETS_NAME.rank + (i + 1);
+                name = '' + FC_ASSETS_NAME.rank + (i + 1);
                 this._rankFrames.push(this.spriteAtlas.getSpriteFrame(name));
             }
         }

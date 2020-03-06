@@ -2,12 +2,15 @@
  * 玩家类模块
  * 记录玩家的相关数据,控制飞机棋子的运行
  */
-import { PLAYER_TYPE, PLANE_TYPE, COMMAND_FC_PLAYER, FC_EVENT, AI_GRADE, AI_BEHAVIOR } from "./FC_Constant";
-import Comm_Model from "../../myCommon/script/Comm_Model";
+import { FC_PLAYER_TYPE, FC_PLANE_TYPE, COMMAND_FC_PLAYER, FC_EVENT, FC_AI_GRADE, FC_AI_BEHAVIOR } from "./FC_Constant";
+import Comm_Model from "../../myCommon/core/m_c/Comm_Model";
 import FC_GameData from "./FC_GameData";
-import Comm_Command from "../../myCommon/script/Comm_Command";
-import Comm_Log from "../../myCommon/script/Comm_Log";
-import { NOTIFICATION, CommFunc } from "../../myCommon/script/Comm_Modules";
+import Comm_Command from "../../myCommon/core/m_c/Comm_Command";
+import Comm_Log from "../../myCommon/utils/Comm_Log";
+import NOTIFICATION from "../../myCommon/core/event/NOTIFICATION";
+import CommFunc from "../../myCommon/utils/CommFunc";
+import FC_UserData from "./FC_UserData";
+import { FC_SavePlayerData } from "./FC_Interface";
 
 export default class FC_PlayerModel extends Comm_Model{
     public constructor() {
@@ -20,20 +23,20 @@ export default class FC_PlayerModel extends Comm_Model{
     private _playerRank: number = null;             // 结束排名
     private _diceResults: number[] = null;          // 骰子结果
     private _canTouchDice: boolean = null;          // 可否点击骰子
-    private _aiDifficute: AI_GRADE = null;          // ai等级
-    private _aiBehavior: AI_BEHAVIOR = null;        // ai特性
+    private _aiDifficute: FC_AI_GRADE = null;          // ai等级
+    private _aiBehavior: FC_AI_BEHAVIOR = null;        // ai特性
 
     public rotateIndex: number = null;              // 轮转次序
-    public playerType: PLAYER_TYPE = null;          // 玩家类型
-    public planeType: PLANE_TYPE = null;            // 控制的飞机类型
+    public playerType: FC_PLAYER_TYPE = null;          // 玩家类型
+    public planeType: FC_PLANE_TYPE = null;            // 控制的飞机类型
     public canMovePlaneCount: number = null;        // 可以移动的飞机数量
     public active: boolean = null;                  // 是否激活
 
-    public get AIDifficult(): AI_GRADE{
+    public get AIDifficult(): FC_AI_GRADE{
         return this._aiDifficute;
     };
 
-    public get AIBehavior(): AI_BEHAVIOR{
+    public get AIBehavior(): FC_AI_BEHAVIOR{
         return this._aiBehavior;
     };
 
@@ -62,85 +65,104 @@ export default class FC_PlayerModel extends Comm_Model{
     };
 
     // 初始化(所控制的飞机类型)
-    public init(plane: PLANE_TYPE, index: number){
+    public init(plane: FC_PLANE_TYPE, index: number){
         this.planeType = plane;
         this._index = index;
     };
 
     // 重置(只重置头像/玩家类型/次序...)
     public reset(){
+        let isSave = FC_GameData.getInstance().isSave;
+        let saveData: FC_SavePlayerData = null;
+        if(isSave){
+            saveData = FC_UserData.getInstance().getPlayerSave(this.planeType);
+        }
+
         // 玩家类型
         this.playerType = FC_GameData.getInstance().getPlayerType(this.planeType);
 
         // icon编号
         this._playerIcon = -1;
-        if(this.playerType !== PLAYER_TYPE.NONE){
+        if(this.playerType !== FC_PLAYER_TYPE.NONE){
             this._playerIcon = FC_GameData.getInstance().getPlayerIconIndex(this.planeType);
         }
 
         // 轮转次序
         this.rotateIndex = FC_GameData.getInstance().getPlayerOrder(this.planeType);
 
+        this._playerRank = -1;          // 无排名
+        if(isSave){
+            this._playerRank = saveData.rank;
+        }
+
         this.active = true;
-        if(this.playerType === PLAYER_TYPE.AI){
-            this._playerName = "电脑" + this._index;
-            // 随机ai等级
-            let num = CommFunc.rand(90);
-            if(num < 30){
-                this._aiDifficute = AI_GRADE.SIMPLE;
+        if(this.playerType === FC_PLAYER_TYPE.AI){
+            let info_1 = '';
+            let info_2 = '';
 
-                // test
-                this._playerName = "简单" + this._playerName;
-
-            }else if(num < 60){
-                this._aiDifficute = AI_GRADE.NORMAL;
-
-                // test
-                this._playerName = "普通" + this._playerName;
-
+            if(isSave){
+                this._aiDifficute = saveData.aiDiffi;
+                this._aiBehavior = saveData.aiBehavior;
             }else{
-                this._aiDifficute = AI_GRADE.HARD;
+                // 随机ai等级
+                let num = CommFunc.rand(90);
+                if(num < 30){
+                    this._aiDifficute = FC_AI_GRADE.SIMPLE;
 
-                // test
-                this._playerName = "困难" + this._playerName;
+                    // // test
+                    // info_1 = "简单";
 
+                }else if(num < 60){
+                    this._aiDifficute = FC_AI_GRADE.NORMAL;
+
+                    // // test
+                    // info_1 = "普通";
+
+                }else{
+                    this._aiDifficute = FC_AI_GRADE.HARD;
+
+                    // // test
+                    // info_1 = "困难";
+
+                }
+
+                // 随机ai特性
+                num = CommFunc.rand(90);
+                if(num < 30){
+                    this._aiBehavior = FC_AI_BEHAVIOR.ATTACK;
+
+                    // // test
+                    // info_2 = "进攻";
+
+                }else if(num < 60){
+                    this._aiBehavior = FC_AI_BEHAVIOR.EVASION;
+
+                    // // test
+                    // info_2 = "闪避";
+
+                }else{
+                    this._aiBehavior = FC_AI_BEHAVIOR.DEVELOPMENT;
+
+                    // // test
+                    // info_2 = "发育";
+
+                }
             }
 
-            // 随机ai特性
-            num = CommFunc.rand(90);
-            if(num < 30){
-                this._aiBehavior = AI_BEHAVIOR.ATTACK;
+            this._playerName = info_1 + info_2 + "电脑" + this._index;
 
-                // test
-                this._playerName = "进攻" + this._playerName;
-
-            }else if(num < 60){
-                this._aiBehavior = AI_BEHAVIOR.EVASION;
-
-                // test
-                this._playerName = "闪避" + this._playerName;
-
-            }else{
-                this._aiBehavior = AI_BEHAVIOR.DEVELOPMENT;
-
-                // test
-                this._playerName = "发育" + this._playerName;
-
-            }
-
-        }else if(this.playerType === PLAYER_TYPE.OFFLINE){
+        }else if(this.playerType === FC_PLAYER_TYPE.OFFLINE){
             this._playerName = "玩家" + this._index;
 
-        }else if(this.playerType === PLAYER_TYPE.ONLINE){
+        }else if(this.playerType === FC_PLAYER_TYPE.ONLINE){
             this._playerName = "";
 
-        }else if(this.playerType === PLAYER_TYPE.NONE){
+        }else if(this.playerType === FC_PLAYER_TYPE.NONE){
             this._playerName = "";
             this.active = false;
 
         }
 
-        this._playerRank = -1;          // 无排名
         this._diceResults = [];         // 骰子结果
         this._canTouchDice = false;     // 可否被点击
 
@@ -167,13 +189,13 @@ export default class FC_PlayerModel extends Comm_Model{
             let num = this._diceResults[this._diceResults.length - 1];
             this.sendMessageToContronller(COMMAND_FC_PLAYER.start_round, num === undefined ? 0 : num);
 
-            if(this.playerType === PLAYER_TYPE.AI){
+            if(this.playerType === FC_PLAYER_TYPE.AI){
                 // 电脑,自动掷骰子
                 this.throwDice();
                 // 不可点击
                 this._canTouchDice = false;
                 start = true;
-            }else if(this.playerType === PLAYER_TYPE.OFFLINE){
+            }else if(this.playerType === FC_PLAYER_TYPE.OFFLINE){
                 this._canTouchDice = true;
                 start = true;
             }
@@ -208,6 +230,7 @@ export default class FC_PlayerModel extends Comm_Model{
             name: this._playerName,
             iconIndex: this._playerIcon,
             planeType: this.planeType,
+            rank: this._playerRank,
         };
 
         this.sendMessageToContronller(COMMAND_FC_PLAYER.flush_ui, obj);

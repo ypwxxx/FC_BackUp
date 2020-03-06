@@ -1,6 +1,7 @@
-import { NOTIFICATION } from "../../myCommon/script/Comm_Modules";
-import { COMM_EVENT, VIEW_SWITCH_TYPE } from "../../myCommon/script/Comm_Enum";
-import { FC_EVENT } from "./FC_Constant";
+import NOTIFICATION from "../../myCommon/core/event/NOTIFICATION";
+import { VIEW_SWITCH_TYPE } from "../../myCommon/Comm_Constant";
+import { FC_EVENT, FC_NAME_VIEW } from "./FC_Constant";
+import Comm_Main from "../../myCommon/Comm_Main";
 
 const {ccclass, property} = cc._decorator;
 // const Share = require("Share");
@@ -27,12 +28,12 @@ export default class FC_PauseView extends cc.Component {
         // 显示广告
 
 
-        NOTIFICATION.emit(COMM_EVENT.SWITCH_VIEW, {name: 'pause', type: VIEW_SWITCH_TYPE.HIDE, solo: false});
+        Comm_Main.switchView({name: FC_NAME_VIEW.pause, type: VIEW_SWITCH_TYPE.HIDE, solo: false});
         NOTIFICATION.emit(FC_EVENT.GAME_RESUME);
     };
 
     public restart(){
-        NOTIFICATION.emit(COMM_EVENT.SWITCH_VIEW, {name: 'set', type: VIEW_SWITCH_TYPE.MOVE_LEFT, solo: false});
+        Comm_Main.switchView({name: FC_NAME_VIEW.set, type: VIEW_SWITCH_TYPE.MOVE_LEFT, solo: false});
     };
 
     public home(){
@@ -44,7 +45,7 @@ export default class FC_PauseView extends cc.Component {
     };
 
     public help(){
-        NOTIFICATION.emit(COMM_EVENT.SWITCH_VIEW, {name: 'help', type: VIEW_SWITCH_TYPE.MOVE_RIGHT, solo: false});
+        Comm_Main.switchView({name: FC_NAME_VIEW.help, type: VIEW_SWITCH_TYPE.MOVE_RIGHT, solo: false})
     };
 
     public voice(){

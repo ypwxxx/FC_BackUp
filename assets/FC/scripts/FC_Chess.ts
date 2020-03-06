@@ -1,6 +1,6 @@
 import FC_ChessPoint from "./FC_ChessPoint";
-import { PlayerTypeChessPointArray, PlayerTypeChessPointBase, ChessPointInit } from "./FC_Interface";
-import { DIRECTION, PLANE_TYPE } from "./FC_Constant";
+import { FC_PlayerTypeChessPointArray, FC_PlayerTypeChessPointBase, FC_ChessPointInit, FC_SavePointData } from "./FC_Interface";
+import { FC_DIRECTION, FC_PLANE_TYPE, FC_POINT_POS_TYPE } from "./FC_Constant";
 
 /**
  * 棋盘类模块
@@ -52,12 +52,12 @@ export default class FC_Chess {
     ];
     // 棋盘外环方向(以蓝色开始点起始--黄色)(开始-结束-方向)
     private static _ChessPointOutDirArr: number[][] = [
-        [0, 2, DIRECTION.DOWN],[3, 6, DIRECTION.RIGHT],
-        [7, 12, DIRECTION.DOWN],[13, 15, DIRECTION.LEFT],
-        [16, 19, DIRECTION.DOWN],[20, 25, DIRECTION.LEFT],
-        [26, 28, DIRECTION.UP],[29, 32, DIRECTION.LEFT],
-        [33, 38, DIRECTION.UP],[39, 41, DIRECTION.RIGHT],
-        [42, 45, DIRECTION.UP],[46, 51, DIRECTION.RIGHT],
+        [0, 2, FC_DIRECTION.DOWN],[3, 6, FC_DIRECTION.RIGHT],
+        [7, 12, FC_DIRECTION.DOWN],[13, 15, FC_DIRECTION.LEFT],
+        [16, 19, FC_DIRECTION.DOWN],[20, 25, FC_DIRECTION.LEFT],
+        [26, 28, FC_DIRECTION.UP],[29, 32, FC_DIRECTION.LEFT],
+        [33, 38, FC_DIRECTION.UP],[39, 41, FC_DIRECTION.RIGHT],
+        [42, 45, FC_DIRECTION.UP],[46, 51, FC_DIRECTION.RIGHT],
     ]
     // 棋盘内环棋点的坐标数组(红色开始)
     private static _ChessPointInPosArr: cc.Vec2[][] = [
@@ -67,8 +67,8 @@ export default class FC_Chess {
         [cc.v2(258, -1),cc.v2(217, -1),cc.v2(174, -1),cc.v2(133, -1),cc.v2(91, -1),cc.v2(47, -1)]
     ];
     // 棋盘内环方向(红色开始)
-    private static _ChessPointInDirArr: DIRECTION[] = [
-        DIRECTION.UP, DIRECTION.RIGHT, DIRECTION.DOWN, DIRECTION.LEFT
+    private static _ChessPointInDirArr: FC_DIRECTION[] = [
+        FC_DIRECTION.UP, FC_DIRECTION.RIGHT, FC_DIRECTION.DOWN, FC_DIRECTION.LEFT
     ];
     // 各方飞机停驻点的坐标(红色开始)
     private static _ChessPointPlaneStopPosArr: cc.Vec2[][] = [
@@ -82,8 +82,8 @@ export default class FC_Chess {
         cc.v2(-169, -338),cc.v2(-340, 170),cc.v2(173, 338),cc.v2(340, -173)
     ];
     // 各方飞机待机点(同停驻区域)方向
-    private static _ChessPointPlaneWaitDirArr: DIRECTION[] = [
-        DIRECTION.UP, DIRECTION.RIGHT, DIRECTION.DOWN, DIRECTION.LEFT
+    private static _ChessPointPlaneWaitDirArr: FC_DIRECTION[] = [
+        FC_DIRECTION.UP, FC_DIRECTION.RIGHT, FC_DIRECTION.DOWN, FC_DIRECTION.LEFT
     ];
     // 各方飞机内环切入点序号(红色开始)
     private static _ChessPointPlaneToInIndexArr: number[] = [
@@ -95,24 +95,24 @@ export default class FC_Chess {
     ];
     // 各方飞机飞棋点序号(红色开始)(开始[0]-结束[1]-方向)
     private static _ChessPointPlaneFlyIndexArr: number[][] = [
-        [43, 3, DIRECTION.RIGHT],
-        [4, 16, DIRECTION.DOWN],
-        [17, 29, DIRECTION.LEFT],
-        [30, 42, DIRECTION.UP]
+        [43, 3, FC_DIRECTION.RIGHT],
+        [4, 16, FC_DIRECTION.DOWN],
+        [17, 29, FC_DIRECTION.LEFT],
+        [30, 42, FC_DIRECTION.UP]
     ];
     // 各方飞机内环与飞行线交叉点及类型(红色开始))(序号-类型)
     private static _ChessPointPlaneInCrossFlyLineIndexArr: number[][] = [
-        [2, PLANE_TYPE.THE_BLUE],
-        [2, PLANE_TYPE.THE_GREEN],
-        [2, PLANE_TYPE.THE_RED],
-        [2, PLANE_TYPE.THE_YELLOW],
+        [2, FC_PLANE_TYPE.THE_BLUE],
+        [2, FC_PLANE_TYPE.THE_GREEN],
+        [2, FC_PLANE_TYPE.THE_RED],
+        [2, FC_PLANE_TYPE.THE_YELLOW],
     ];
 
     
     private _pointOutArr: FC_ChessPoint[] = null;                               // 外环棋点数组(以蓝色开始点起始)
-    private _pointInArr: PlayerTypeChessPointArray = null;                      // 内环棋点数组(红色开始)
-    private _planeWaitArr: PlayerTypeChessPointBase = null;                     // 飞机待机点数组(红色开始)
-    private _planeStopArr: PlayerTypeChessPointArray = null;                    // 飞机停驻点数组(红色开始)
+    private _pointInArr: FC_PlayerTypeChessPointArray = null;                      // 内环棋点数组(红色开始)
+    private _planeWaitArr: FC_PlayerTypeChessPointBase = null;                     // 飞机待机点数组(红色开始)
+    private _planeStopArr: FC_PlayerTypeChessPointArray = null;                    // 飞机停驻点数组(红色开始)
 
     // 初始化
     public init(){
@@ -127,21 +127,43 @@ export default class FC_Chess {
     };
 
     /**
+     * 根据存档数据返回point
+     */
+    public getPointBySaveData(data: FC_SavePointData){
+        let point = null;
+        if(data.area === FC_POINT_POS_TYPE.STOP){
+            point = this.getStopPoint(data.type, data.index);
+
+        }else if(data.area === FC_POINT_POS_TYPE.WAIT){
+            point = this.getWaitPoint(data.type);
+
+        }else if(data.area === FC_POINT_POS_TYPE.OUTTER){
+            point = this.getOuterPoint(data.index);
+
+        }else if(data.area === FC_POINT_POS_TYPE.INNER){
+            point = this.getInnerPoint(data.index, data.type);
+
+        }
+
+        return point;
+    };
+
+    /**
      * 获取停驻点
      * @param type 类型
      * @param index 序号
      */
-    public getStopPoint(type: PLANE_TYPE, index: number){
+    public getStopPoint(type: FC_PLANE_TYPE, index: number){
         let result: FC_ChessPoint = null;
         let group: FC_ChessPoint[] = null;
 
-        if(type === PLANE_TYPE.THE_RED){
+        if(type === FC_PLANE_TYPE.THE_RED){
             group = this._planeStopArr.red;
-        }else if(type === PLANE_TYPE.THE_YELLOW){
+        }else if(type === FC_PLANE_TYPE.THE_YELLOW){
             group = this._planeStopArr.yellow;
-        }else if(type === PLANE_TYPE.THE_BLUE){
+        }else if(type === FC_PLANE_TYPE.THE_BLUE){
             group = this._planeStopArr.blue;
-        }else if(type === PLANE_TYPE.THE_GREEN){
+        }else if(type === FC_PLANE_TYPE.THE_GREEN){
             group = this._planeStopArr.green;
         }
 
@@ -159,15 +181,15 @@ export default class FC_Chess {
      * 获取待机点
      * @param type 类型
      */
-    public getWaitPoint(type: PLANE_TYPE){
+    public getWaitPoint(type: FC_PLANE_TYPE){
         let result: FC_ChessPoint = null;
-        if(type === PLANE_TYPE.THE_RED){
+        if(type === FC_PLANE_TYPE.THE_RED){
             result = this._planeWaitArr.red;
-        }else if(type === PLANE_TYPE.THE_YELLOW){
+        }else if(type === FC_PLANE_TYPE.THE_YELLOW){
             result = this._planeWaitArr.yellow;
-        }else if(type === PLANE_TYPE.THE_BLUE){
+        }else if(type === FC_PLANE_TYPE.THE_BLUE){
             result = this._planeWaitArr.blue;
-        }else if(type === PLANE_TYPE.THE_GREEN){
+        }else if(type === FC_PLANE_TYPE.THE_GREEN){
             result = this._planeWaitArr.green;
         }
         return result ? result.clone() : null;
@@ -193,20 +215,20 @@ export default class FC_Chess {
      * @param index 
      * @param type 
      */
-    public getInnerPoint(index: number, type: PLANE_TYPE){
+    public getInnerPoint(index: number, type: FC_PLANE_TYPE){
         let point: FC_ChessPoint = null;
         let group: FC_ChessPoint[] = null;
 
-        if(type == PLANE_TYPE.THE_RED){
+        if(type == FC_PLANE_TYPE.THE_RED){
             group = this._pointInArr.red
 
-        }else if(type == PLANE_TYPE.THE_YELLOW){
+        }else if(type == FC_PLANE_TYPE.THE_YELLOW){
             group = this._pointInArr.yellow
 
-        }else if(type == PLANE_TYPE.THE_BLUE){
+        }else if(type == FC_PLANE_TYPE.THE_BLUE){
             group = this._pointInArr.blue
 
-        }else if(type == PLANE_TYPE.THE_GREEN){
+        }else if(type == FC_PLANE_TYPE.THE_GREEN){
             group = this._pointInArr.green
             
         }
@@ -225,7 +247,7 @@ export default class FC_Chess {
      * 获取开始点位置
      * @param type 
      */
-    public getStartPoint(type: PLANE_TYPE){
+    public getStartPoint(type: FC_PLANE_TYPE){
         let temp = FC_Chess._ChessPointPlaneStartIndexArr[type];
         let point = this.getOuterPoint(temp);
         return point ? point.clone() : null;
@@ -235,7 +257,7 @@ export default class FC_Chess {
      * 获取切入点
      * @param type 
      */
-    public getCutPoint(type: PLANE_TYPE){
+    public getCutPoint(type: FC_PLANE_TYPE){
         let temp = FC_Chess._ChessPointPlaneToInIndexArr[type];
         let point = this.getOuterPoint(temp);
         return point ? point.clone() : null;
@@ -250,7 +272,7 @@ export default class FC_Chess {
             let dir = this._getOutPointDirection(i);            // 方向
             let type = this._getOutPointType(i);                // 类型
 
-            let data: ChessPointInit = {
+            let data: FC_ChessPointInit = {
                 index: i,
                 pos: p,
                 type: type,
@@ -290,7 +312,7 @@ export default class FC_Chess {
                 let p = temp[j];                            // 坐标
                 let isEnd = j === temp.length - 1;
 
-                let data: ChessPointInit = {
+                let data: FC_ChessPointInit = {
                     index: j,
                     pos: p,
                     type: type,
@@ -304,16 +326,16 @@ export default class FC_Chess {
 
                 let point = new FC_ChessPoint(data);
                 
-                if(i == PLANE_TYPE.THE_RED){
+                if(i == FC_PLANE_TYPE.THE_RED){
                     this._pointInArr.red.push(point);
 
-                }else if(i == PLANE_TYPE.THE_YELLOW){
+                }else if(i == FC_PLANE_TYPE.THE_YELLOW){
                     this._pointInArr.yellow.push(point);
 
-                }else if(i == PLANE_TYPE.THE_BLUE){
+                }else if(i == FC_PLANE_TYPE.THE_BLUE){
                     this._pointInArr.blue.push(point);
 
-                }else if(i == PLANE_TYPE.THE_GREEN){
+                }else if(i == FC_PLANE_TYPE.THE_GREEN){
                     this._pointInArr.green.push(point);
 
                 }
@@ -330,7 +352,7 @@ export default class FC_Chess {
             let dir = FC_Chess._ChessPointPlaneWaitDirArr[i];   // 方向
             let type = this._numberToType(i);
 
-            let data: ChessPointInit = {
+            let data: FC_ChessPointInit = {
                 index: i,
                 pos: p,
                 type: type,
@@ -340,13 +362,13 @@ export default class FC_Chess {
 
             let point = new FC_ChessPoint(data);
             
-            if(i == PLANE_TYPE.THE_RED){
+            if(i == FC_PLANE_TYPE.THE_RED){
                 this._planeWaitArr.red = point;
-            }else if(i == PLANE_TYPE.THE_YELLOW){
+            }else if(i == FC_PLANE_TYPE.THE_YELLOW){
                 this._planeWaitArr.yellow = point;
-            }else if(i == PLANE_TYPE.THE_BLUE){
+            }else if(i == FC_PLANE_TYPE.THE_BLUE){
                 this._planeWaitArr.blue = point;
-            }else if(i == PLANE_TYPE.THE_GREEN){
+            }else if(i == FC_PLANE_TYPE.THE_GREEN){
                 this._planeWaitArr.green = point;
             }
         }
@@ -361,18 +383,18 @@ export default class FC_Chess {
             let dir = FC_Chess._ChessPointPlaneWaitDirArr[i];       // 方向
             let type = this._numberToType(i);
             let group = this._planeStopArr.red;
-            if(i == PLANE_TYPE.THE_YELLOW){
+            if(i == FC_PLANE_TYPE.THE_YELLOW){
                 group = this._planeStopArr.yellow;
-            }else if(i == PLANE_TYPE.THE_BLUE){
+            }else if(i == FC_PLANE_TYPE.THE_BLUE){
                 group = this._planeStopArr.blue;
-            }else if(i == PLANE_TYPE.THE_GREEN){
+            }else if(i == FC_PLANE_TYPE.THE_GREEN){
                 group = this._planeStopArr.green;
             }
             
             for(let j = 0; j < temp.length; j++){
                 let p = temp[j];                                    // 坐标
 
-                let data: ChessPointInit = {
+                let data: FC_ChessPointInit = {
                     index: j,
                     pos: p,
                     type: type,
@@ -390,7 +412,7 @@ export default class FC_Chess {
      * 获取外环棋点方向
      * @param index 序号
      */
-    private _getOutPointDirection(index: number): DIRECTION{
+    private _getOutPointDirection(index: number): FC_DIRECTION{
         for(let i = 0; i < FC_Chess._ChessPointOutDirArr.length; i++){
             let config = FC_Chess._ChessPointOutDirArr[i];
             let start = config[0];
@@ -398,7 +420,7 @@ export default class FC_Chess {
             let dir = config[2];
             if(index >= start && index <= end){
                 // 处于这个方向范围内
-                let direction: DIRECTION = this._numberToDirection(dir);
+                let direction: FC_DIRECTION = this._numberToDirection(dir);
                 return direction;
             }
         }
@@ -408,21 +430,21 @@ export default class FC_Chess {
      * 获取外环棋点类型 按照黄-蓝-绿-红的顺序
      * @param index 序号
      */
-    private _getOutPointType(index: number): PLANE_TYPE{
+    private _getOutPointType(index: number): FC_PLANE_TYPE{
         let num = Number(index) % 4;
-        let color: PLANE_TYPE = null;
+        let color: FC_PLANE_TYPE = null;
         switch(num){
             case 0:
-                color = PLANE_TYPE.THE_YELLOW;
+                color = FC_PLANE_TYPE.THE_YELLOW;
                 break;
             case 1:
-                color = PLANE_TYPE.THE_BLUE;
+                color = FC_PLANE_TYPE.THE_BLUE;
                 break;
             case 2:
-                color = PLANE_TYPE.THE_GREEN;
+                color = FC_PLANE_TYPE.THE_GREEN;
                 break;
             case 3:
-                color = PLANE_TYPE.THE_RED;
+                color = FC_PLANE_TYPE.THE_RED;
                 break;
             default: 
                 break;
@@ -462,7 +484,7 @@ export default class FC_Chess {
      * 检查是否是飞行点
      * @param data
      */
-    private _checkIsFlyPoint(data: ChessPointInit){
+    private _checkIsFlyPoint(data: FC_ChessPointInit){
         for(let i = 0; i < FC_Chess._ChessPointPlaneFlyIndexArr.length; i++){
             let temp = FC_Chess._ChessPointPlaneFlyIndexArr[i];
             let start = temp[0];
@@ -482,7 +504,7 @@ export default class FC_Chess {
      * 检查是否是内环交叉点
      * @param data 
      */
-    private _checkIsCrossPoint(data: ChessPointInit){
+    private _checkIsCrossPoint(data: FC_ChessPointInit){
         let temp = FC_Chess._ChessPointPlaneInCrossFlyLineIndexArr[data.type];
         let p = temp[0];
         if(data.index == p){
@@ -494,16 +516,16 @@ export default class FC_Chess {
      * 获取内环类型
      * @param num 
      */
-    private _getInnerPointType(num: number): PLANE_TYPE{
-        let type: PLANE_TYPE = null;
+    private _getInnerPointType(num: number): FC_PLANE_TYPE{
+        let type: FC_PLANE_TYPE = null;
         if(num == 0){
-            type = PLANE_TYPE.THE_RED;
+            type = FC_PLANE_TYPE.THE_RED;
         }else if(num == 1){
-            type = PLANE_TYPE.THE_YELLOW;
+            type = FC_PLANE_TYPE.THE_YELLOW;
         }else if(num == 2){
-            type = PLANE_TYPE.THE_BLUE;
+            type = FC_PLANE_TYPE.THE_BLUE;
         }else if(num == 3){
-            type = PLANE_TYPE.THE_GREEN;
+            type = FC_PLANE_TYPE.THE_GREEN;
         }
         return type;
     };
@@ -512,16 +534,16 @@ export default class FC_Chess {
      * 数字转方向
      * @param num 
      */
-    private _numberToDirection(num: number): DIRECTION{
-        let direction: DIRECTION = null;
-        if(num == DIRECTION.DOWN){
-            direction = DIRECTION.DOWN;
-        }else if(num == DIRECTION.UP){
-            direction = DIRECTION.UP;
-        }else if(num == DIRECTION.LEFT){
-            direction = DIRECTION.LEFT;
-        }else if(num == DIRECTION.RIGHT){
-            direction = DIRECTION.RIGHT;
+    private _numberToDirection(num: number): FC_DIRECTION{
+        let direction: FC_DIRECTION = null;
+        if(num == FC_DIRECTION.DOWN){
+            direction = FC_DIRECTION.DOWN;
+        }else if(num == FC_DIRECTION.UP){
+            direction = FC_DIRECTION.UP;
+        }else if(num == FC_DIRECTION.LEFT){
+            direction = FC_DIRECTION.LEFT;
+        }else if(num == FC_DIRECTION.RIGHT){
+            direction = FC_DIRECTION.RIGHT;
         }
         return direction;
     };
@@ -530,16 +552,16 @@ export default class FC_Chess {
      * 数字转类型
      * @param num 
      */
-    private _numberToType(num: number): PLANE_TYPE{
-        let type: PLANE_TYPE = null;
-        if(num == PLANE_TYPE.THE_RED){
-            type = PLANE_TYPE.THE_RED;
-        }else if(num == PLANE_TYPE.THE_BLUE){
-            type = PLANE_TYPE.THE_BLUE;
-        }else if(num == PLANE_TYPE.THE_YELLOW){
-            type = PLANE_TYPE.THE_YELLOW;
-        }else if(num == PLANE_TYPE.THE_GREEN){
-            type = PLANE_TYPE.THE_GREEN;
+    private _numberToType(num: number): FC_PLANE_TYPE{
+        let type: FC_PLANE_TYPE = null;
+        if(num == FC_PLANE_TYPE.THE_RED){
+            type = FC_PLANE_TYPE.THE_RED;
+        }else if(num == FC_PLANE_TYPE.THE_BLUE){
+            type = FC_PLANE_TYPE.THE_BLUE;
+        }else if(num == FC_PLANE_TYPE.THE_YELLOW){
+            type = FC_PLANE_TYPE.THE_YELLOW;
+        }else if(num == FC_PLANE_TYPE.THE_GREEN){
+            type = FC_PLANE_TYPE.THE_GREEN;
         }
         return type;
     };

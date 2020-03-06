@@ -1,19 +1,22 @@
 import FC_GameData from "./FC_GameData";
-import { PLANE_TYPE, GAME_BASE_DATA, FC_EVENT, PLAYER_TYPE, AI_GRADE, PLANE_MOVE_TYPE, AI_BEHAVIOR, DIRECTION } from "./FC_Constant";
+import { FC_PLANE_TYPE, FC_GAME_BASE_DATA, FC_EVENT, FC_PLAYER_TYPE, FC_AI_GRADE, FC_PLANE_MOVE_TYPE, FC_AI_BEHAVIOR, FC_DIRECTION, FC_NAME_VIEW, FC_TIP } from "./FC_Constant";
 import FC_PlaneModel from "./FC_PlaneModel";
-import { PlaneChesserObject, PlayerObject, PlaneMoveSimpleTask } from "./FC_Interface";
-import Comm_Model from "../../myCommon/script/Comm_Model";
-import Comm_ContronllerComponent from "../../myCommon/script/Comm_ContronllerComponent";
-import Comm_Binder from "../../myCommon/script/Comm_Binder";
+import { FC_PlaneChesserObject, FC_PlaneMoveSimpleTask, FC_SavePlayerData, FC_SavePlaneData, FC_SaveUserData } from "./FC_Interface";
+import Comm_Model from "../../myCommon/core/m_c/Comm_Model";
+import Comm_ContronllerComponent from "../../myCommon/core/m_c/Comm_ContronllerCop";
+import Comm_Binder from "../../myCommon/core/m_c/Comm_Binder";
 import FC_Chess from "./FC_Chess";
-import { NOTIFICATION, CommFunc } from "../../myCommon/script/Comm_Modules";
-import Comm_Log from "../../myCommon/script/Comm_Log";
+import NOTIFICATION from "../../myCommon/core/event/NOTIFICATION";
+import CommFunc from "../../myCommon/utils/CommFunc";
+import Comm_Log from "../../myCommon/utils/Comm_Log";
 import FC_PlayerModel from "./FC_PlayerModel";
 import FC_ChessPoint from "./FC_ChessPoint";
-import { COMM_EVENT, VIEW_SWITCH_TYPE } from "../../myCommon/script/Comm_Enum";
+import { VIEW_SWITCH_TYPE } from "../../myCommon/Comm_Constant";
+import FC_UserData from "./FC_UserData";
+import Comm_Main from "../../myCommon/Comm_Main";
 
 interface TaskObj {
-    taskArr: PlaneMoveSimpleTask[],
+    taskArr: FC_PlaneMoveSimpleTask[],
     featureValues: number[],
     isOnlyMoveStackPlane: boolean,
 };
@@ -25,6 +28,9 @@ const {ccclass, property} = cc._decorator;
 
 @ccclass
 export default class FC_Game extends cc.Component {
+
+    @property(cc.Canvas)
+    canvas: cc.Canvas = null;
 
     @property(cc.Node)
     planeNode: cc.Node = null;                      // 飞机父节点
@@ -49,7 +55,7 @@ export default class FC_Game extends cc.Component {
     private _planePool: cc.NodePool = null;                         // 飞机池
     private _playerPool: cc.NodePool = null;                        // 玩家对象池
     private _boomAnimPool: cc.NodePool = null;                      // 爆炸动画对象池
-    private _planesObj: PlaneChesserObject = {                      // 飞机对象
+    private _planesObj: FC_PlaneChesserObject = {                      // 飞机对象
         red: [],
         yellow: [],
         blue: [],
@@ -69,6 +75,7 @@ export default class FC_Game extends cc.Component {
 
     public onLoad(){
         Comm_Log.log('---初始化加载---');
+        CommFunc.fitScreen(this.canvas);
         // 是否开始log
         Comm_Log.isLog = true;
 
@@ -77,50 +84,50 @@ export default class FC_Game extends cc.Component {
 
         // 初始化飞机对象池
         this._planePool = new cc.NodePool("FC_PlaneContronller");
-        let planesMax = GAME_BASE_DATA.player_max_count * GAME_BASE_DATA.player_chesser_count;
+        let planesMax = FC_GAME_BASE_DATA.player_max_count * FC_GAME_BASE_DATA.player_chesser_count;
         for(let i = 0; i < planesMax; i++){
             let plane = cc.instantiate(this.planePrefab);
             this._planePool.put(plane);
         }
 
         // 初始化飞机
-        this._createPlanes(PLANE_TYPE.THE_RED, this._planesObj.red);
-        this._createPlanes(PLANE_TYPE.THE_YELLOW, this._planesObj.yellow);
-        this._createPlanes(PLANE_TYPE.THE_BLUE, this._planesObj.blue);
-        this._createPlanes(PLANE_TYPE.THE_GREEN, this._planesObj.green);
+        this._createPlanes(FC_PLANE_TYPE.THE_RED, this._planesObj.red);
+        this._createPlanes(FC_PLANE_TYPE.THE_YELLOW, this._planesObj.yellow);
+        this._createPlanes(FC_PLANE_TYPE.THE_BLUE, this._planesObj.blue);
+        this._createPlanes(FC_PLANE_TYPE.THE_GREEN, this._planesObj.green);
 
 
         // 初始化玩家对象池
         this._playerPool = new cc.NodePool("FC_PlayerController");
-        for(let i = 0; i < GAME_BASE_DATA.player_max_count; i++){
+        for(let i = 0; i < FC_GAME_BASE_DATA.player_max_count; i++){
             let player = cc.instantiate(this.playerPrefab);
             this._playerPool.put(player);
         }
 
         // 初始化玩家/禁用标志(玩家与控制的飞机固定,红-红,黄-黄...)
-        for(let i = 0; i < GAME_BASE_DATA.player_max_count; i++){
+        for(let i = 0; i < FC_GAME_BASE_DATA.player_max_count; i++){
             let playerModel = new FC_PlayerModel();
             this._playerOrderArr.push(playerModel);
-            let pos = GAME_BASE_DATA.pos_player.clone();
+            let pos = FC_GAME_BASE_DATA.pos_player.clone();
 
             let ban = cc.instantiate(this.banPrefab);
             this.boardNode.addChild(ban);
             this._banSpArr.push(ban);
-            let banPos = GAME_BASE_DATA.pos_banSp.clone();
+            let banPos = FC_GAME_BASE_DATA.pos_banSp.clone();
 
-            if(i === PLANE_TYPE.THE_RED){
+            if(i === FC_PLANE_TYPE.THE_RED){
                 pos.scaleSelf(cc.v2(-1,-1));
                 banPos.scaleSelf(cc.v2(-1,-1));
 
-            }else if(i === PLANE_TYPE.THE_YELLOW){
+            }else if(i === FC_PLANE_TYPE.THE_YELLOW){
                 pos.scaleSelf(cc.v2(-1, 1));
                 banPos.scaleSelf(cc.v2(-1,1));
 
-            }else if(i === PLANE_TYPE.THE_BLUE){
+            }else if(i === FC_PLANE_TYPE.THE_BLUE){
                 pos.scaleSelf(cc.v2(1, 1));
                 banPos.scaleSelf(cc.v2(1,1));
 
-            }else if(i === PLANE_TYPE.THE_GREEN){
+            }else if(i === FC_PLANE_TYPE.THE_GREEN){
                 pos.scaleSelf(cc.v2(1, -1));
                 banPos.scaleSelf(cc.v2(1,-1));
 
@@ -148,8 +155,11 @@ export default class FC_Game extends cc.Component {
     };
 
     public start(){
-        // 重置游戏
-        this._resetGame();
+        if(FC_GameData.getInstance().isSave){
+            this._continueGame();
+        }else{
+            this._resetGame();
+        }
     };
 
     public onDestroy(){
@@ -159,7 +169,7 @@ export default class FC_Game extends cc.Component {
     // 重置游戏(不重置绑定器)
     private _resetGame(){
         Comm_Log.log("---重置游戏---");
-        console.time('reset');
+        Comm_Log.time('reset');
         // 重置游戏数据
         this._round = [1,0];                    // 回合数: 第一个回合第一个玩家开始
         this._stackPlanes = [
@@ -168,10 +178,81 @@ export default class FC_Game extends cc.Component {
         this._rankIndex = 1;
         this._pause = false;
 
-        // 重置用户数据
-
-
         // 重置玩家/飞机/禁用标志
+        this._resetPPB();
+
+        // 保存游戏
+        this._saveGame();
+
+        // 重置完成,轮转回合
+        this._rotaryRound();
+
+        Comm_Log.timeEnd('reset');
+    };
+
+    // 继续游戏
+    private _continueGame(){
+        Comm_Log.log("---继续游戏---");
+        Comm_Log.time('continue');
+
+        // 继续游戏数据
+        this._pause = false;
+        this._stackPlanes = [
+            [],[],[],[]
+        ];
+        this._rankIndex = FC_UserData.getInstance().getRankIndex();
+        this._round = FC_UserData.getInstance().getRound();
+
+        // 初始化飞机等
+        this._resetPPB();
+
+        // 根据存档，配置玩家/飞机信息
+        // 配置叠机信息
+        let saveStack = FC_UserData.getInstance().getStackPlane();
+        for(let i = 0; i < saveStack.length; i++){
+            let tempArr = saveStack[i];
+            for(let j = 0; j < tempArr.length; j++){
+                let stack = tempArr[j];
+                let planeStack = [];
+                let planes = this._getPlanesByType(i);
+                for(let n = 0; n < stack.length; n++){
+                    let stackNum = stack[n];
+                    for(let value of planes){
+                        if(stackNum === value.index){
+                            planeStack.push(value);
+                        }
+                    }
+                }
+                this._stackPlanes[i].push(planeStack);
+            }
+        }
+        // 配置飞机
+        let planeSave = FC_UserData.getInstance().getPlaneSave();
+        for(let i = 0; i < planeSave.length; i++){
+            let tempSave = planeSave[i];
+            let planes = this._getPlanesByType(tempSave.type);
+            for(let plane of planes){
+                if(tempSave.index === plane.index){
+                    // 检索出对应的point
+                    let point = FC_Chess.getInstance().getPointBySaveData(tempSave.point);
+                    let obj = {
+                        point: point,
+                        moveStep: tempSave.moveStep,
+                        pos: cc.v2(tempSave.posX, tempSave.posY),
+                        isFinish: tempSave.isFinish,
+                    }
+                    plane.loadSave(obj);
+                }
+            }
+        }
+
+        this._rotaryRound();
+
+        Comm_Log.timeEnd('continue');
+    };
+
+    // 重置玩家/飞机/禁用标志
+    private _resetPPB(){
         for(let i = 0; i < this._playerOrderArr.length; i++){
             let player = this._playerOrderArr[i];
             // 玩家重置
@@ -194,11 +275,6 @@ export default class FC_Game extends cc.Component {
         this._playerOrderArr.sort((a, b) => {
             return a.rotateIndex - b.rotateIndex;
         });
-
-        // 重置完成,轮转回合
-        this._rotaryRound();
-
-        console.timeEnd('reset');
     };
 
     // 暂停游戏
@@ -209,7 +285,7 @@ export default class FC_Game extends cc.Component {
         this._pauseOrResume();
 
         // 拉起暂停页面
-        NOTIFICATION.emit(COMM_EVENT.SWITCH_VIEW, {name: 'pause', type: VIEW_SWITCH_TYPE.HIDE, solo: false});
+        Comm_Main.switchView({name: FC_NAME_VIEW.pause, type: VIEW_SWITCH_TYPE.HIDE, solo: false});
     };
 
     // 恢复游戏
@@ -246,6 +322,9 @@ export default class FC_Game extends cc.Component {
     private _rotaryRound(){
         if(this._pause) return;
 
+        // 回合开始 保存游戏
+        this._saveGame();
+
         this._round[1]++;
         if(this._round[1] === 5){
             // 已完成一个回合
@@ -281,7 +360,7 @@ export default class FC_Game extends cc.Component {
      */
     private _choosePlane(obj: any){
         let player: FC_PlayerModel = this._playerOrderArr[this._round[1] - 1];          // 玩家
-        let planeType: PLANE_TYPE = obj.type;
+        let planeType: FC_PLANE_TYPE = obj.type;
         let planeIndex: number = obj.index;
         // 校验点击的飞机类型是否是正确的
         if(player.planeType === planeType){
@@ -313,8 +392,9 @@ export default class FC_Game extends cc.Component {
     private _crashPlanes(obj: any){
         Comm_Log.log("---坠机---");
         let targetPoint: FC_ChessPoint = obj.point;
-        let type: PLANE_TYPE = obj.type;
-        for(let i = 0; i < GAME_BASE_DATA.player_max_count; i++){
+        let type: FC_PLANE_TYPE = obj.type;
+
+        for(let i = 0; i < FC_GAME_BASE_DATA.player_max_count; i++){
             if(i === type) continue;
 
             let planes = this._getPlanesByType(i);
@@ -344,6 +424,9 @@ export default class FC_Game extends cc.Component {
                 }
             }
         }
+
+        // 播放爆炸动画
+        this._createBoomAnim(targetPoint.pos);
     };
 
     /**
@@ -376,8 +459,9 @@ export default class FC_Game extends cc.Component {
                 }
             }
             // 弹出作弊提示
+            this._showTip('9');
 
-            return;
+            return; 
         }
 
         this._canDiceAgain = false;
@@ -434,7 +518,7 @@ export default class FC_Game extends cc.Component {
                 }
             }
 
-            let planeMaxCount = GAME_BASE_DATA.player_chesser_count;
+            let planeMaxCount = FC_GAME_BASE_DATA.player_chesser_count;
             // 检查所有飞机状态是否正常
             if((inStopPlanes.length + inWaitPlanes.length + inRoutesPlanes.length + hasFinishPlanes.length) !== planeMaxCount){
                 // 所有状态的飞机之和应等于4
@@ -447,6 +531,9 @@ export default class FC_Game extends cc.Component {
 
         // 没有可走子飞机, 跳过本回合
         if(canMovePlanes.length === 0){
+            // 显示提示
+            this._showTip('6');
+
             player.endRound();
             this._rotaryRound();
             return;
@@ -460,7 +547,7 @@ export default class FC_Game extends cc.Component {
 
         }else{
             // 判断是玩家还是电脑
-            if(playerType === PLAYER_TYPE.AI){
+            if(playerType === FC_PLAYER_TYPE.AI){
                 /**
                  * AL
                  * 
@@ -512,15 +599,15 @@ export default class FC_Game extends cc.Component {
                 let indexB = 20;
                 let indexC = 60;
 
-                if(ai_grade === AI_GRADE.SIMPLE){
+                if(ai_grade === FC_AI_GRADE.SIMPLE){
                     probability_rand = 30;
 
-                }else if(ai_grade === AI_GRADE.NORMAL){
+                }else if(ai_grade === FC_AI_GRADE.NORMAL){
                     probability_rand = 15;
                     indexA = 20;
                     indexB = 40;
 
-                }else if(ai_grade === AI_GRADE.HARD){
+                }else if(ai_grade === FC_AI_GRADE.HARD){
                     indexA = 40;
                     indexB = 60;
                     indexC = 90;
@@ -542,9 +629,9 @@ export default class FC_Game extends cc.Component {
                     let index  = 0;
                     targetTasks = null;
 
-                    if(ai_behavior === AI_BEHAVIOR.EVASION){
+                    if(ai_behavior === FC_AI_BEHAVIOR.EVASION){
                         index = 1;
-                    }else if(ai_behavior === AI_BEHAVIOR.DEVELOPMENT){
+                    }else if(ai_behavior === FC_AI_BEHAVIOR.DEVELOPMENT){
                         index = 2;
                     }
 
@@ -645,7 +732,7 @@ export default class FC_Game extends cc.Component {
                     }
                 }
 
-            }else if(playerType === PLAYER_TYPE.OFFLINE){
+            }else if(playerType === FC_PLAYER_TYPE.OFFLINE){
                 // 线下玩家
                 // 有多个棋子可选, 等待玩家选择棋子
                 // 可选棋子进入等待状态
@@ -673,7 +760,7 @@ export default class FC_Game extends cc.Component {
     private _planeMoveEnd(obj: any){
         Comm_Log.log(`---飞机移动结束---`);
         let player: FC_PlayerModel = this._playerOrderArr[this._round[1] - 1];
-        let planeType: PLANE_TYPE = obj.type;
+        let planeType: FC_PLANE_TYPE = obj.type;
 
         if(this._isOnlyMoveStackPlane){
             // 只能移动迭机上的棋子
@@ -747,12 +834,15 @@ export default class FC_Game extends cc.Component {
             }
 
             if(this._canDiceAgain){
+                // 显示提示
+                this._showTip('7', planeType);
+
                 // 再次投掷
-                if(player.playerType === PLAYER_TYPE.AI){
+                if(player.playerType === FC_PLAYER_TYPE.AI){
                     // ai 自动投掷
                     player.throwDice();
 
-                }else if(player.playerType === PLAYER_TYPE.OFFLINE){
+                }else if(player.playerType === FC_PLAYER_TYPE.OFFLINE){
                     player.setTouch(true);
                 }
 
@@ -760,6 +850,8 @@ export default class FC_Game extends cc.Component {
                 // 轮转下一个玩家
                 player.endRound();
                 this._rotaryRound();
+                // // 保存一次
+                // this._saveGame();
 
             }
         }
@@ -797,21 +889,21 @@ export default class FC_Game extends cc.Component {
      * @param planes 
      * @param direction 
      */
-    private _flushStackPlanes(planes: FC_PlaneModel[], direction: DIRECTION){
+    private _flushStackPlanes(planes: FC_PlaneModel[], direction: FC_DIRECTION){
         let dis: number = null;
         let pos: cc.Vec2 = planes[0].position;
         let dir: cc.Vec2 = null;
 
-        if(direction === DIRECTION.UP){
+        if(direction === FC_DIRECTION.UP){
             dir = cc.v2(1, 0);
 
-        }else if(direction === DIRECTION.DOWN){
+        }else if(direction === FC_DIRECTION.DOWN){
             dir = cc.v2(-1, 0);
 
-        }else if(direction === DIRECTION.LEFT){
+        }else if(direction === FC_DIRECTION.LEFT){
             dir = cc.v2(0, 1);
 
-        }else if(direction === DIRECTION.RIGHT){
+        }else if(direction === FC_DIRECTION.RIGHT){
             dir = cc.v2(0, -1);
 
         }
@@ -865,18 +957,18 @@ export default class FC_Game extends cc.Component {
                 return a.rank - b.rank;
             });
 
-            NOTIFICATION.emit(COMM_EVENT.SWITCH_VIEW, {name: 'over', data: rankData, type: VIEW_SWITCH_TYPE.HIDE});
+            Comm_Main.switchView({name: FC_NAME_VIEW.over, beforeData: rankData, type: VIEW_SWITCH_TYPE.HIDE});
         }
         return result;
     };
 
     /**
      * 模拟棋子走子
-     * @param type PLANE_TYPE 类型
+     * @param type FC_PLANE_TYPE 类型
      * @param plane FC_PlaneModel 被模拟的飞机
      * @param diceNum number 骰子数
      */
-    private _simulatePlaneMove(type: PLANE_TYPE, plane: FC_PlaneModel, diceNum: number): TaskObj{
+    private _simulatePlaneMove(type: FC_PLANE_TYPE, plane: FC_PlaneModel, diceNum: number): TaskObj{
         let value = FC_Game.DefaultFeatureValue;
         let featureValueTable = [                                   // 特征值的表
             [3, 4, 3],                                              // 1.可以到达终点 
@@ -888,7 +980,7 @@ export default class FC_Game extends cc.Component {
             [1, 5, 5],                                              // 7.可以离开停机坪
             [7, 1, 1],                                              // 8.可以撞到敌机-会自毁
         ];
-        let taskArr: PlaneMoveSimpleTask[] = [];                    // 任务表
+        let taskArr: FC_PlaneMoveSimpleTask[] = [];                    // 任务表
         let featureValues: number[] = [value, value, value];        // 特征值
         let behaviors: number[] = [];                               // 行为组
         let stepNum = 0;                                            // 已经走的步数
@@ -905,9 +997,9 @@ export default class FC_Game extends cc.Component {
             if(!nextPoint){
                 debugger;
             }
-            let task: PlaneMoveSimpleTask = {
+            let task: FC_PlaneMoveSimpleTask = {
                 point: nextPoint,
-                moveType: PLANE_MOVE_TYPE.STEP,
+                moveType: FC_PLANE_MOVE_TYPE.STEP,
             };
             taskArr.push(task);
             behaviors.push(6);
@@ -926,12 +1018,12 @@ export default class FC_Game extends cc.Component {
                 }else if(curPoint.isOuterRing){
                     // 在外环
                     let index = curPoint.index + 1;
-                    index = index === GAME_BASE_DATA.chesser_outter_count ? 0 : index;
+                    index = index === FC_GAME_BASE_DATA.chesser_outter_count ? 0 : index;
 
                     if(isBack){
                         // 回退
                         index = curPoint.index - 1;
-                        index = index === -1 ? (GAME_BASE_DATA.chesser_outter_count - 1) : index;
+                        index = index === -1 ? (FC_GAME_BASE_DATA.chesser_outter_count - 1) : index;
                     }
 
                     if(curPoint.isCutPoint && curPoint.type === plane.type && plane.forwardMoveStep >= 24){                     // 24是最小的抵达切入点需要的步数
@@ -948,7 +1040,7 @@ export default class FC_Game extends cc.Component {
                 }else if(curPoint.isInnerRing){
                     // 在内环
                     let index = curPoint.index + 1;
-                    index = index === GAME_BASE_DATA.chesser_inner_singer_count ? 4 : index;
+                    index = index === FC_GAME_BASE_DATA.chesser_inner_singer_count ? 4 : index;
 
                     if(isBack){
                         index = curPoint.index - 1;
@@ -965,9 +1057,9 @@ export default class FC_Game extends cc.Component {
                 if(stepNum !== (diceNum - 1)){
                     // 还不是最后一步
                     // 生成任务
-                    let task: PlaneMoveSimpleTask = {
+                    let task: FC_PlaneMoveSimpleTask = {
                         point: nextPoint,
-                        moveType: PLANE_MOVE_TYPE.STEP,
+                        moveType: FC_PLANE_MOVE_TYPE.STEP,
                         isBack: isBack
                     };
 
@@ -1010,10 +1102,10 @@ export default class FC_Game extends cc.Component {
                     };
 
                     // 判断结束点
-                    let judgeEndPoint = (endPoint: FC_ChessPoint, planeType: PLANE_TYPE, isBack: boolean, moveType: PLANE_MOVE_TYPE = PLANE_MOVE_TYPE.STEP) => {
+                    let judgeEndPoint = (endPoint: FC_ChessPoint, planeType: FC_PLANE_TYPE, isBack: boolean, moveType: FC_PLANE_MOVE_TYPE = FC_PLANE_MOVE_TYPE.STEP) => {
                         let result = true;
                         let enemys = this._getEnemyPlanes(endPoint, planeType);
-                        let task: PlaneMoveSimpleTask = {
+                        let task: FC_PlaneMoveSimpleTask = {
                             point: endPoint.clone(),
                             moveType: moveType,
                             isBack: isBack,
@@ -1029,7 +1121,7 @@ export default class FC_Game extends cc.Component {
                             }else{
                                 task = {
                                     point: plane.stopPoint,
-                                    moveType: PLANE_MOVE_TYPE.STEP,
+                                    moveType: FC_PLANE_MOVE_TYPE.STEP,
                                 }
                                 taskArr.push(task);
                                 behaviors.push(7);
@@ -1044,15 +1136,15 @@ export default class FC_Game extends cc.Component {
                     };
 
                     // 判断飞行点
-                    let judgeFlyPoint = (point: FC_ChessPoint, planeType: PLANE_TYPE) => {
+                    let judgeFlyPoint = (point: FC_ChessPoint, planeType: FC_PLANE_TYPE) => {
                         let result = true;
                         let crossPlanes = getCrossPlanes(point);
                         if(crossPlanes.length > 1){
                             // 中途有迭机 回退 飞行失败
                             let crossPoint = crossPlanes[0].point.clone();
-                            let task: PlaneMoveSimpleTask = {
+                            let task: FC_PlaneMoveSimpleTask = {
                                 point: crossPoint,
-                                moveType: PLANE_MOVE_TYPE.FLY,
+                                moveType: FC_PLANE_MOVE_TYPE.FLY,
                                 isBack: false,
                                 isFly: true,
                                 isFlyCenter: true,
@@ -1061,7 +1153,7 @@ export default class FC_Game extends cc.Component {
 
                             task = {
                                 point: point.clone(),
-                                moveType: PLANE_MOVE_TYPE.FLY,
+                                moveType: FC_PLANE_MOVE_TYPE.FLY,
                                 isBack: true,
                                 isFly: true,
                             }
@@ -1072,9 +1164,9 @@ export default class FC_Game extends cc.Component {
                         }else if(crossPlanes.length === 1){
                             // 中途有敌机 无迭机 击毁敌机 刷新棋点
                             let crossPoint = crossPlanes[0].point.clone();
-                            let task: PlaneMoveSimpleTask = {
+                            let task: FC_PlaneMoveSimpleTask = {
                                 point: crossPoint,
-                                moveType: PLANE_MOVE_TYPE.FLY,
+                                moveType: FC_PLANE_MOVE_TYPE.FLY,
                                 isBack: false,
                                 isFly: true,
                                 isCrash: true,
@@ -1086,9 +1178,9 @@ export default class FC_Game extends cc.Component {
                         }
 
                         point = FC_Chess.getInstance().getOuterPoint(point.flyEndIndex);
-                        let task: PlaneMoveSimpleTask = {
+                        let task: FC_PlaneMoveSimpleTask = {
                             point: point.clone(),
-                            moveType: PLANE_MOVE_TYPE.FLY,
+                            moveType: FC_PLANE_MOVE_TYPE.FLY,
                             isBack: false,
                             isFly: true,
                             // isFlyCenter: crossPlanes.length === 1,
@@ -1106,7 +1198,7 @@ export default class FC_Game extends cc.Component {
                             }else{
                                 task = {
                                     point: plane.stopPoint,
-                                    moveType: PLANE_MOVE_TYPE.STEP,
+                                    moveType: FC_PLANE_MOVE_TYPE.STEP,
                                 }
                                 taskArr.push(task);
                                 behaviors.push(7);
@@ -1128,22 +1220,22 @@ export default class FC_Game extends cc.Component {
                     };
 
                     // 判断跳跃点
-                    let judgeJumpPoint = (point: FC_ChessPoint, planeType: PLANE_TYPE) => {
+                    let judgeJumpPoint = (point: FC_ChessPoint, planeType: FC_PLANE_TYPE) => {
                         let result = true;
                         let jumpEndIndex = (point.index + 4) % 52;
                         let stackPlanesInJump = this._getStackInTwoPoints(point.index, jumpEndIndex, planeType);
                         if(stackPlanesInJump){
                             // 跳跃中途有迭机, 准备回退
-                            let task: PlaneMoveSimpleTask = {
+                            let task: FC_PlaneMoveSimpleTask = {
                                 point: stackPlanesInJump[0].point.clone(),
-                                moveType: PLANE_MOVE_TYPE.JUMP,
+                                moveType: FC_PLANE_MOVE_TYPE.JUMP,
                                 isBack: false,
                             };
                             taskArr.push(task);
 
                             task = {
                                 point: point.clone(),
-                                moveType: PLANE_MOVE_TYPE.JUMP,
+                                moveType: FC_PLANE_MOVE_TYPE.JUMP,
                                 isBack: true,
                             };
                             taskArr.push(task);
@@ -1151,7 +1243,7 @@ export default class FC_Game extends cc.Component {
                         }else{
                             // 中途无迭机
                             point = FC_Chess.getInstance().getOuterPoint(jumpEndIndex);
-                            if(judgeEndPoint(point, planeType, false, PLANE_MOVE_TYPE.JUMP)){
+                            if(judgeEndPoint(point, planeType, false, FC_PLANE_MOVE_TYPE.JUMP)){
                                 // 跳跃结束 成功
                                 nextPoint = point;
                                 if(!nextPoint){
@@ -1170,12 +1262,12 @@ export default class FC_Game extends cc.Component {
                     };
 
                     // 判断终点行为
-                    let judgeEndBehaviors = (point: FC_ChessPoint, type: PLANE_TYPE) => {
+                    let judgeEndBehaviors = (point: FC_ChessPoint, type: FC_PLANE_TYPE) => {
                         // 如果是内环 判断终点
                         if(point.isInnerRing && point.isEndPoint){
-                            let task: PlaneMoveSimpleTask = {
+                            let task: FC_PlaneMoveSimpleTask = {
                                 point: plane.stopPoint,
-                                moveType: PLANE_MOVE_TYPE.STEP,
+                                moveType: FC_PLANE_MOVE_TYPE.STEP,
                                 isEnd: true,
                             };
                             taskArr.push(task);
@@ -1293,7 +1385,7 @@ export default class FC_Game extends cc.Component {
                     // 判断6格内
                     let laterIndex = index - 6;
                     if(laterIndex < 0){
-                        laterIndex += GAME_BASE_DATA.chesser_outter_count;
+                        laterIndex += FC_GAME_BASE_DATA.chesser_outter_count;
                     }
                     if(enemyIndex >= laterIndex && enemyIndex < index){
                         num++;
@@ -1340,8 +1432,8 @@ export default class FC_Game extends cc.Component {
 
                 // 判断6格内
                 let aheadIndex = index + 6;
-                if(aheadIndex >= GAME_BASE_DATA.chesser_outter_count){
-                    aheadIndex -= GAME_BASE_DATA.chesser_outter_count;
+                if(aheadIndex >= FC_GAME_BASE_DATA.chesser_outter_count){
+                    aheadIndex -= FC_GAME_BASE_DATA.chesser_outter_count;
                 }
                 if(enemyIndex >= index && enemyIndex <= aheadIndex){
                     num++;
@@ -1363,13 +1455,13 @@ export default class FC_Game extends cc.Component {
             num = 100;
 
         }else if(point.isWaitPoint){
-            num = GAME_BASE_DATA.chesser_outter_count + 6;
+            num = FC_GAME_BASE_DATA.chesser_outter_count + 6;
 
         }else if(point.isOuterRing){
             let cutIndex = FC_Chess.getInstance().getCutPoint(type).index;
             let index = point.index;
             if(cutIndex < index){
-                num = GAME_BASE_DATA.chesser_outter_count - index + cutIndex;
+                num = FC_GAME_BASE_DATA.chesser_outter_count - index + cutIndex;
             }else{
                 num = cutIndex - index;
             }
@@ -1387,9 +1479,9 @@ export default class FC_Game extends cc.Component {
     /**
      * 判断是否遇到迭机(仅外环)
      * @param point 目标点
-     * @param type PLANE_TYPE 类型
+     * @param type FC_PLANE_TYPE 类型
      */
-    private _isStackPlanes(point: FC_ChessPoint, type: PLANE_TYPE){
+    private _isStackPlanes(point: FC_ChessPoint, type: FC_PLANE_TYPE){
         let bool = false;
         if(point.isOuterRing){
             for(let i = 0; i < this._stackPlanes.length; i++){
@@ -1414,7 +1506,7 @@ export default class FC_Game extends cc.Component {
      * @param endIndex 点二
      * @param type 类型
      */
-    private _getStackInTwoPoints(startIndex: number, endIndex: number, type: PLANE_TYPE){
+    private _getStackInTwoPoints(startIndex: number, endIndex: number, type: FC_PLANE_TYPE){
         let result: FC_PlaneModel[] = null;
         let min = startIndex;
         let max = endIndex;
@@ -1428,7 +1520,7 @@ export default class FC_Game extends cc.Component {
                 if(plane.active && plane.inOuter && plane.locationIndex > min && plane.locationIndex < max){
                     // 这个迭机在范围内
                     let dis_1 = plane.index - min;
-                    dis_1 < 0 ? dis_1 += GAME_BASE_DATA.chesser_outter_count : 0;
+                    dis_1 < 0 ? dis_1 += FC_GAME_BASE_DATA.chesser_outter_count : 0;
 
                     if(!result || (result && dis_1 < dis)){
                         dis = dis_1;
@@ -1444,12 +1536,12 @@ export default class FC_Game extends cc.Component {
     /**
      * 获取目标点上,非本类型的其他飞机
      * @param targetPoint FC_ChessPoint 目标点
-     * @param type PLANE_TYPE 类型
+     * @param type FC_PLANE_TYPE 类型
      */
-    private _getEnemyPlanes(targetPoint: FC_ChessPoint, type: PLANE_TYPE){
+    private _getEnemyPlanes(targetPoint: FC_ChessPoint, type: FC_PLANE_TYPE){
         let result: FC_PlaneModel[] = [];
         if(targetPoint.isOuterRing){
-            for(let i = 0; i < GAME_BASE_DATA.player_max_count; i++){
+            for(let i = 0; i < FC_GAME_BASE_DATA.player_max_count; i++){
                 let temps = this._getPlanesByType(i);
                 if(!temps[0].active) continue;
                 if(temps[0].type !== type){
@@ -1468,9 +1560,9 @@ export default class FC_Game extends cc.Component {
     /**
      * 获取相同类型, 相同点的飞机
      * @param targetPoint FC_ChessPoint 目标点
-     * @param type PLANE_TYPE 类型
+     * @param type FC_PLANE_TYPE 类型
      */
-    private _getSamePlanes(targetPoint: FC_ChessPoint, type: PLANE_TYPE){
+    private _getSamePlanes(targetPoint: FC_ChessPoint, type: FC_PLANE_TYPE){
         let result: FC_PlaneModel[] = [];
         let planes = this._getPlanesByType(type);
 
@@ -1491,15 +1583,15 @@ export default class FC_Game extends cc.Component {
      * 获取planes
      * @param type 
      */
-    private _getPlanesByType(type: PLANE_TYPE){
+    private _getPlanesByType(type: FC_PLANE_TYPE){
         let planes: FC_PlaneModel[];
-        if(type === PLANE_TYPE.THE_RED){
+        if(type === FC_PLANE_TYPE.THE_RED){
             planes = this._planesObj.red;
-        }else if(type === PLANE_TYPE.THE_YELLOW){
+        }else if(type === FC_PLANE_TYPE.THE_YELLOW){
             planes = this._planesObj.yellow;
-        }else if(type === PLANE_TYPE.THE_BLUE){
+        }else if(type === FC_PLANE_TYPE.THE_BLUE){
             planes = this._planesObj.blue;
-        }else if(type === PLANE_TYPE.THE_GREEN){
+        }else if(type === FC_PLANE_TYPE.THE_GREEN){
             planes = this._planesObj.green;
         }
         return planes;
@@ -1509,8 +1601,8 @@ export default class FC_Game extends cc.Component {
      * 创建飞机棋子
      * @param type 类型
      */
-    private _createPlanes(type: PLANE_TYPE, group: FC_PlaneModel[]){
-        let planeMaxCount = GAME_BASE_DATA.player_chesser_count;
+    private _createPlanes(type: FC_PLANE_TYPE, group: FC_PlaneModel[]){
+        let planeMaxCount = FC_GAME_BASE_DATA.player_chesser_count;
         for(let i = 0; i < planeMaxCount; i++){
             // 新建飞机棋子
             let index = Number(type) * planeMaxCount + i + 1;
@@ -1556,5 +1648,95 @@ export default class FC_Game extends cc.Component {
 
     private _bindMC(m: Comm_Model, c: Comm_ContronllerComponent | cc.Node){
         Comm_Binder.getInstance().bindMC(m, c);
+    };
+
+    /**
+     * 显示提示
+     */
+    private _showTip(num: string, type?: FC_PLANE_TYPE){
+        let title = FC_TIP[num].replace('#', this._getGroupByRound(type));
+        NOTIFICATION.emit(FC_NAME_VIEW.tip, title);
+    };
+
+    /**
+     * 根据飞机类型返回某一方的字符
+     * @param planeType 
+     */
+    private _getGroupByRound(planeType: FC_PLANE_TYPE){
+        let name = '';
+        if(planeType === FC_PLANE_TYPE.THE_RED){
+            name = '红';
+        }else if(planeType === FC_PLANE_TYPE.THE_YELLOW){
+            name = '黄';
+        }else if(planeType === FC_PLANE_TYPE.THE_BLUE){
+            name = '蓝';
+        }else if(planeType === FC_PLANE_TYPE.THE_GREEN){
+            name = '绿';
+        }
+        return name;
+    };
+
+    /**
+     * 保存
+     */
+    private _saveGame(){
+        // 玩家存档数据
+        let playersSave: FC_SavePlayerData[] = [];
+        for(let player of this._playerOrderArr){
+            let tempSave: FC_SavePlayerData = {
+                type: player.planeType,
+                rank: player.rank,
+                aiDiffi: player.AIDifficult,
+                aiBehavior: player.AIBehavior
+            };
+            playersSave.push(tempSave);
+        }
+
+        // 飞机存档数据
+        let planesSave: FC_SavePlaneData[] = [];
+        for(let player of this._playerOrderArr){
+            if(!player.active) continue;
+
+            let planes = this._getPlanesByType(player.planeType);
+            for(let plane of planes){
+                let tempSave: FC_SavePlaneData = {
+                    index: plane.index,
+                    type: plane.type,
+                    moveStep: plane.moveStep,
+                    point: {
+                        index: plane.point.index,
+                        area: plane.point.area,
+                        type: plane.point.type,
+                    },
+                    posX: plane.position.x,
+                    posY: plane.position.y,
+                    isFinish: plane.inEndArea,
+                };
+                planesSave.push(tempSave);
+            }
+        }
+
+        // 叠机存档数据
+        let planeStackSave: number[][][] = [];
+        for(let i = 0; i < this._stackPlanes.length; i++){
+            let stackPlanes = this._stackPlanes[i];
+            planeStackSave[i] = [];
+            for(let planes of stackPlanes){
+                let tempPlanes: number[] = [];
+                for(let plane of planes){
+                    tempPlanes.push(plane.index);
+                }
+                planeStackSave[i].push(tempPlanes);
+            }
+        }
+
+        let save: FC_SaveUserData = {
+            round: this._round,
+            planeStacks: planeStackSave,
+            rankIndex: this._rankIndex,
+            player: playersSave,
+            plane: planesSave,
+        }
+        FC_UserData.getInstance().save(save);
     };
 }

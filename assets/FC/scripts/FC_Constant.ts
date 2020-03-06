@@ -1,7 +1,31 @@
 // 常量
 
+// 游戏信息存储时使用的常量
+export const FC_GAME_SAVE = {
+    GAME_DATA: 'FC_GameData',
+    USER_DATA: 'FC_UserData',
+}
+
+// view切换字符串
+export const FC_NAME_VIEW = {
+    main: 'main',
+    pause: 'pause',
+    set: 'set',
+    help: 'help',
+    over: 'over',
+    continue: 'continue',
+    tip: 'tip',
+}
+
+export enum FC_POINT_POS_TYPE {
+    STOP,
+    WAIT,
+    OUTTER,
+    INNER
+}
+
 // 飞行棋基础数据
-export const GAME_BASE_DATA = {
+export const FC_GAME_BASE_DATA = {
     chesser_outter_count: 52,                       // 外环棋点数量
     chesser_inner_count: 24,                        // 内环棋点数量
     chesser_inner_singer_count: 6,                  // 内环单方棋点数量
@@ -13,8 +37,8 @@ export const GAME_BASE_DATA = {
 
     plane_count: 16,                                // 飞机数量
 
-    plane_step_time: 0.14,                           // 飞机移动时间
-    plane_jump_time: 0.24,                           // 飞机跳跃时间
+    plane_step_time: 0.16,                          // 飞机移动时间
+    plane_jump_time: 0.28,                          // 飞机跳跃时间
     plane_fly_time: 0.4,                            // 飞机飞行时间
     plane_step_scale: 1.05,                         // 飞机移动缩放
     plane_jump_scale: 1.08,                         // 飞机跳跃缩放
@@ -30,7 +54,7 @@ export const GAME_BASE_DATA = {
 };
 
 // 资源命名
-export const ASSETS_NAME = {
+export const FC_ASSETS_NAME = {
     launch_num_light: 'num_light_',
     launch_num_grey: 'num_gray_',
 
@@ -48,10 +72,31 @@ export const ASSETS_NAME = {
     rank: 'rank_',
 };
 
+// 提示字符集
+export const FC_TIP = {
+    "0":    "#方获取先行机会",
+    "1":    "请点击股子 \n 进行投掷",
+    "2":    "请选择一枚 \n 可移动的棋子",
+    "3":    "#方行棋",
+    "4":    "轮到#方投掷",
+    "5":    "#方投掷中",
+    "6":    "无法起飞",
+    "7":    "#方再投一次",
+    "8":    "游戏结束",
+    "9":    "系统检测连续三次幸运6 \n 遣返当前所有棋子",
+    "10":   "游戏开始",
+    "11":   "已超时*次，再超时\n &次将被移出游戏",
+    "12":   "#方超时",
+    "13":   "连接成功",
+    "14":   "连接服务器失败，正在努力重连",
+    "15":   "正在连接服务器...",
+    "16":   "无法连接网络",
+};
+
 /**
  * 方向
  */
-export enum DIRECTION {
+export enum FC_DIRECTION {
     UP,
     DOWN,
     LEFT,
@@ -61,17 +106,18 @@ export enum DIRECTION {
 /**
  * 飞机类型
  */
-export enum PLANE_TYPE {
+export enum FC_PLANE_TYPE {
     THE_RED,
     THE_YELLOW,
     THE_BLUE,
-    THE_GREEN
+    THE_GREEN,
+    THE_END
 };
 
 /**
  * 飞机移动类型
  */
-export enum PLANE_MOVE_TYPE {
+export enum FC_PLANE_MOVE_TYPE {
     STEP,
     JUMP,
     FLY
@@ -80,7 +126,7 @@ export enum PLANE_MOVE_TYPE {
 /**
  * 玩家类型
  */
-export enum PLAYER_TYPE {
+export enum FC_PLAYER_TYPE {
     NONE,       // 无
     ONLINE,     // 线上真人
     OFFLINE,    // 线下真人
@@ -90,7 +136,7 @@ export enum PLAYER_TYPE {
 /**
  * ai等级
  */
-export enum AI_GRADE {
+export enum FC_AI_GRADE {
     SIMPLE,
     NORMAL,
     HARD
@@ -99,7 +145,7 @@ export enum AI_GRADE {
 /**
  * ai特性
  */
-export enum AI_BEHAVIOR {
+export enum FC_AI_BEHAVIOR {
     ATTACK,                     // 攻击型
     EVASION,                    // 躲避型
     DEVELOPMENT,                // 发育型

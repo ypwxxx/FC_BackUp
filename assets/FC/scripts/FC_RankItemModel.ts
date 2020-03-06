@@ -1,14 +1,12 @@
-import Comm_Model from "../../myCommon/script/Comm_Model";
+import Comm_Model from "../../myCommon/core/m_c/Comm_Model";
 import { COMMAND_FC_RANK } from "./FC_Constant";
 
 // 排行项
 
 export default class FC_RankItemModel extends Comm_Model {
 
-    public constructor(num: number){
+    public constructor(){
         super();
-        this._rank = num;
-        this.sendMessageToContronller(COMMAND_FC_RANK.set_rank, this._rank);
     };
 
     private _rank: number = null;
@@ -27,6 +25,10 @@ export default class FC_RankItemModel extends Comm_Model {
         this._contronller.node.active = bool;
     };
 
+    public init(num: number){
+        this._rank = num;
+        this.sendMessageToContronller(COMMAND_FC_RANK.set_rank, this._rank);
+    };
 
     public flush(data: any){
         this.sendMessageToContronller(COMMAND_FC_RANK.flush, data);
