@@ -7,7 +7,7 @@
 			"service_desc": "<p>一键集成，快速定位游戏玩家。统计更准确、数据更安全、接入更简单",
 			"service_title": "精准了解游戏的新增、活跃、留存、付费等数据",
 			"service_guide_url": "https://n-analytics.cocos.com/docs/",
-			"service_sample_url": "https://github.com/cocos-creator/tutorial-dark-slash/tree/analytics",
+			"service_sample_url": "https://github.com/CocosService/cocosAnalyticsDemo",
 			"service_dev_url": "http://analytics.cocos.com/realtime/jump_to/<app_id>",
 			"service_type": "3",
 			"service_type_zh": "公司和个人游戏",
