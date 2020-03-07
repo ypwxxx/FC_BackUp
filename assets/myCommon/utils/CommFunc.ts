@@ -161,6 +161,55 @@ class CommFunc {
             canvas.fitWidth = true;
         }
     };
+
+    /**
+     * 获取字符串字节长度
+     * @param str string
+     */
+    public byteLength(str: string){
+        let len = 0, temp = str;
+        for(let i = 0; i < temp.length; i++){
+            let char = temp.charCodeAt(i);
+            if(char > 255){
+                len += 2;
+            }else {
+                len ++;
+            }
+        }
+        return len;
+    };
+
+    /**
+     * 提取字符串片段，根据字节
+     * @param start 开始位置，0--开始
+     * @param len 截取长度
+     */
+    public byteSplice(str: string, start: number = 0, len: number = 0){
+        let tempStr = '';
+        let byteLength = this.byteLength(str);
+        if(byteLength <= len){
+            tempStr = str;
+        }else{
+            let tempLen = 0;
+            for(let i = start; i < str.length; i++){
+                let char = str.charAt(i);
+                let charCode = str.charCodeAt(i);
+                if(charCode > 255){
+                    tempLen += 2;
+                }else {
+                    tempLen ++;
+                }
+
+                if(tempLen <= len){
+                    tempStr += char;
+                }else{
+                    break;
+                }
+            }
+        }
+
+        return tempStr;
+    }
 }
 
 export default CommFunc.getInstance();

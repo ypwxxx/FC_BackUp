@@ -44,8 +44,8 @@
     },
     "_scale": {
       "__type__": "cc.Vec3",
-      "x": 0.7095651225664925,
-      "y": 0.7095651225664925,
+      "x": 1.075499611292014,
+      "y": 1.075499611292014,
       "z": 1
     },
     "_quat": {
@@ -693,7 +693,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "Comm_Toast",
+    "_name": "Comm_Interactive",
     "_objFlags": 0,
     "_parent": {
       "__id__": 2
@@ -807,8 +807,8 @@
     },
     "_scale": {
       "__type__": "cc.Vec3",
-      "x": 0.8,
-      "y": 0.9,
+      "x": 1,
+      "y": 1,
       "z": 1
     },
     "_rotationX": 0,
@@ -892,8 +892,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 180,
-      "height": 50
+      "width": 200,
+      "height": 40
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -903,7 +903,7 @@
     "_position": {
       "__type__": "cc.Vec3",
       "x": 0,
-      "y": -62,
+      "y": -70,
       "z": 0
     },
     "_scale": {
@@ -937,8 +937,8 @@
     "_useOriginalSize": true,
     "_string": "这是一个交互框",
     "_N$string": "这是一个交互框",
-    "_fontSize": 35,
-    "_lineHeight": 40,
+    "_fontSize": 32,
+    "_lineHeight": 35,
     "_enableWrapText": true,
     "_N$file": null,
     "_isSystemFontUsed": true,
@@ -990,8 +990,8 @@
     },
     "_contentSize": {
       "__type__": "cc.Size",
-      "width": 65,
-      "height": 69
+      "width": 100,
+      "height": 50
     },
     "_anchorPoint": {
       "__type__": "cc.Vec2",
@@ -1006,8 +1006,8 @@
     },
     "_scale": {
       "__type__": "cc.Vec3",
-      "x": 1.5,
-      "y": 1.5,
+      "x": 1,
+      "y": 1,
       "z": 1
     },
     "_rotationX": 0,
@@ -1034,9 +1034,7 @@
     "_enabled": true,
     "_srcBlendFactor": 770,
     "_dstBlendFactor": 771,
-    "_spriteFrame": {
-      "__uuid__": "1bf4fe09-8c40-4f85-91f6-3ea0913977a4"
-    },
+    "_spriteFrame": null,
     "_type": 0,
     "_sizeMode": 1,
     "_fillType": 0,
@@ -1071,9 +1069,9 @@
       "__id__": 16
     },
     "_enabled": true,
-    "label": {
-      "__id__": 21
-    },
+    "node_bg": null,
+    "sp_icon": null,
+    "label_title": null,
     "_id": "21iiWG/ltByal8uTa/MXSq"
   },
   {
