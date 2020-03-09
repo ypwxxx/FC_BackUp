@@ -29,7 +29,7 @@ export default class FC_HelpView extends cc.Component {
     @property(cc.PageView)
     pageView: cc.PageView = null;
 
-    public flushView(){
+    public moveInBefore(){
         let size = cc.winSize;
         // 设置大小, 设置位置
         this.node.setContentSize(size);

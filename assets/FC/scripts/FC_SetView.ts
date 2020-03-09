@@ -3,6 +3,7 @@ import NOTIFICATION from "../../myCommon/core/event/NOTIFICATION";
 import { FC_EVENT, FC_PLANE_TYPE, FC_PLAYER_TYPE, FC_ASSETS_NAME, FC_NAME_VIEW } from "./FC_Constant";
 import { COMM_EVENT, VIEW_SWITCH_TYPE } from "../../myCommon/Comm_Constant";
 import Comm_Main from "../../myCommon/Comm_Main";
+import Comm_Platform from "../../myCommon/utils/Comm_Platform";
 
 /**
  * 设置游戏页面
@@ -26,6 +27,9 @@ export default class FC_SetView extends cc.Component {
     @property(cc.Node)
     node_start: cc.Node = null;
 
+    @property(cc.Node)
+    adNode: cc.Node = null;
+
     // 0: 无 1: 玩家 2: 电脑
     private _playerSetObj = [0,0,0,0];
     // 0: 2/4/6 1: 5/6 2: 6
@@ -37,12 +41,15 @@ export default class FC_SetView extends cc.Component {
     // 启动数字灰图
     private _launchNumGreySpFrames: cc.SpriteFrame[] = null;
 
+    private _hasLoad: boolean = false;
+
     public onLoad(){
 
     };
 
     // 激活时
-    public onEnable(){
+    public moveInBefore(){
+        this._hasLoad = false;
         // 获取资源
         this._checkAndSetAssets();
 
@@ -63,6 +70,8 @@ export default class FC_SetView extends cc.Component {
         this._launchNum = 0;
 
         this.node_start.active = true;
+
+        Comm_Platform.creatBanner(false, this.adNode, 'FC_1', 'banner1');
     };
 
     // 禁用时
@@ -72,6 +81,8 @@ export default class FC_SetView extends cc.Component {
 
     //  选择玩家
     public btn_choosePlayer(touch: cc.Touch, data: string){
+        if(this._hasLoad) return;
+
         let num = Number(data);
         this._playerSetObj[num]++;
         let type = this._playerSetObj[num];
@@ -97,6 +108,8 @@ export default class FC_SetView extends cc.Component {
 
     // 选择起飞号
     public btn_chooseLaunchNum(touch: cc.Touch, data: string){
+        if(this._hasLoad) return;
+
         let num = Number(data);
         if(this._launchNum !== num){
             this._launchNum = num;
@@ -112,6 +125,9 @@ export default class FC_SetView extends cc.Component {
 
     // 开始游戏
     public btn_startGame(){
+        if(this._hasLoad) return;
+        this._hasLoad = true;
+
         // 设置游戏参数
         let planeTypes = [];
         let playerTypes = [];
@@ -146,12 +162,17 @@ export default class FC_SetView extends cc.Component {
             Comm_Main.switchView(FC_NAME_VIEW.main);
             NOTIFICATION.emit(FC_EVENT.GAME_RESTART);
         }else{
+
+            Comm_Platform.hideBanner();
             cc.director.loadScene("FC_GameScene");
         }
     };
 ;
     // 返回
     public btn_back(){
+        if(this._hasLoad) return;
+
+        Comm_Platform.hideBanner();
         Comm_Main.switchView({name: FC_NAME_VIEW.set, type: VIEW_SWITCH_TYPE.MOVE_LEFT, solo: false});
     };
 

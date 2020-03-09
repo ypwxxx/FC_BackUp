@@ -213,7 +213,7 @@
     "_enabled": true,
     "alignMode": 1,
     "_target": null,
-    "_alignFlags": 5,
+    "_alignFlags": 45,
     "_left": 0,
     "_right": 0,
     "_top": 0,
@@ -226,7 +226,7 @@
     "_isAbsBottom": true,
     "_isAbsHorizontalCenter": true,
     "_isAbsVerticalCenter": true,
-    "_originalWidth": 0,
+    "_originalWidth": 720,
     "_originalHeight": 0,
     "_id": ""
   },
@@ -1941,6 +1941,9 @@
     },
     "rankBoard": {
       "__id__": 18
+    },
+    "adNode": {
+      "__id__": 53
     },
     "_id": ""
   },

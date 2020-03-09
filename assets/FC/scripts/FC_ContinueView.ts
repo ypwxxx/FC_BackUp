@@ -2,22 +2,30 @@ import { FC_NAME_VIEW } from "./FC_Constant";
 import FC_UserData from "./FC_UserData";
 import FC_GameData from "./FC_GameData";
 import Comm_Main from "../../myCommon/Comm_Main";
+import Comm_Platform from "../../myCommon/utils/Comm_Platform";
 
 const {ccclass, property} = cc._decorator;
 
 @ccclass
 export default class FC_ContinueView extends cc.Component {
 
+    @property(cc.Node)
+    adNode: cc.Node = null;
+
     private _oneTouch: boolean = false;
 
-    public onEnable(){
+    public moveInBefore(){
         this._oneTouch = false;
+
+        Comm_Platform.creatBanner(false, this.adNode, 'FC_1', 'banner1');
     }
 
     public back(){
         if(this._oneTouch) return;
         this._oneTouch = true;
         Comm_Main.switchView(FC_NAME_VIEW.continue);
+
+        Comm_Platform.hideBanner();
     };
 
     /**
@@ -29,6 +37,8 @@ export default class FC_ContinueView extends cc.Component {
 
         FC_GameData.getInstance().setSaveInfo();
         cc.director.loadScene("FC_GameScene");
+
+        Comm_Platform.hideBanner();
     };
 
     /**

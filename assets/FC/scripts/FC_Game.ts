@@ -14,6 +14,9 @@ import FC_ChessPoint from "./FC_ChessPoint";
 import { VIEW_SWITCH_TYPE } from "../../myCommon/Comm_Constant";
 import FC_UserData from "./FC_UserData";
 import Comm_Main from "../../myCommon/Comm_Main";
+import Comm_Platform from "../../myCommon/utils/Comm_Platform";
+// const Stat = require("Statistics");
+// const Share = require('Share');
 
 interface TaskObj {
     taskArr: FC_PlaneMoveSimpleTask[],
@@ -50,6 +53,9 @@ export default class FC_Game extends cc.Component {
     @property(cc.Prefab)
     boomAnimPrefab: cc.Prefab = null;               // 爆炸动画
 
+    @property(cc.Node)
+    adNode: cc.Node = null;                         // 广告节点
+
     public static DefaultFeatureValue = 0;          // 默认特征值
 
     private _planePool: cc.NodePool = null;                         // 飞机池
@@ -75,9 +81,12 @@ export default class FC_Game extends cc.Component {
 
     public onLoad(){
         Comm_Log.log('---初始化加载---');
+        // 适应屏幕
         CommFunc.fitScreen(this.canvas);
-        // 是否开始log
-        Comm_Log.isLog = true;
+        // 初始化平台相关
+        // Share.onSystemShare('FC');
+        Comm_Platform.statPlayerCount('FC_PlayerCount', 'FC');
+        Comm_Platform.statGameStart();
 
         // 初始化棋盘 同时会将棋子初始化
         FC_Chess.getInstance().init();
@@ -164,6 +173,7 @@ export default class FC_Game extends cc.Component {
 
     public onDestroy(){
         NOTIFICATION.offByTarget(this);
+        Comm_Platform.statGameEnd();
     };
 
     // 重置游戏(不重置绑定器)
@@ -188,6 +198,9 @@ export default class FC_Game extends cc.Component {
         this._rotaryRound();
 
         Comm_Log.timeEnd('reset');
+
+        // 显示广告
+        Comm_Platform.creatBanner(false, this.adNode, 'FC_1', 'banner2');
     };
 
     // 继续游戏
@@ -249,6 +262,8 @@ export default class FC_Game extends cc.Component {
         this._rotaryRound();
 
         Comm_Log.timeEnd('continue');
+
+        Comm_Platform.creatBanner(false, this.adNode, 'FC_1', 'banner2');
     };
 
     // 重置玩家/飞机/禁用标志
@@ -294,6 +309,9 @@ export default class FC_Game extends cc.Component {
         this._pause = false;
 
         this._pauseOrResume(1);
+
+        // 显示广告
+        Comm_Platform.creatBanner(false, this.adNode, 'FC_1', 'banner2');
     };
 
     // 游戏暂停/恢复  0--暂停 !0--恢复
@@ -957,7 +975,12 @@ export default class FC_Game extends cc.Component {
                 return a.rank - b.rank;
             });
 
-            Comm_Main.switchView({name: FC_NAME_VIEW.over, beforeData: rankData, type: VIEW_SWITCH_TYPE.HIDE});
+            Comm_Platform.showInsertAd();
+            let time = setTimeout(function(){
+                Comm_Main.switchView({name: FC_NAME_VIEW.over, beforeData: rankData, type: VIEW_SWITCH_TYPE.HIDE});
+                clearTimeout(time);
+            }, 500);
+
         }
         return result;
     };

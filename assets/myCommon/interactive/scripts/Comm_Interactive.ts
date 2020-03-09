@@ -1,64 +1,79 @@
-import CommFunc from "../../utils/CommFunc";
-
-// toast element
-
 const {ccclass, property} = cc._decorator;
+import { Toast_Options } from "../../Comm_Interface";
+import Comm_Main from "../../Comm_Main";
 
 @ccclass
 export default class Comm_Interactive extends cc.Component {
 
     @property(cc.Node)
-    node_bg: cc.Node = null;
-    @property(cc.Sprite)
-    sp_icon: cc.Sprite = null;
-    @property(cc.Label)
-    label_title: cc.Label = null;
+    toast: cc.Node = null;
+    
 
-    private _pool: cc.NodePool = null;
-    private _icon: string = null;
+    public static DEFAULT_TIME: number = 1.5;               // toast默认显示时间
+    public static DEFAULT_ICON: string = 'none';            // toast默认icon
+    public static DEFAULT_MASK: boolean = false;            // toast默认mask
+    public static ZINDEX: number = 200;                     // 本组件的zIndex
 
-    public reuse(data: any){
-        let {icon = 'toast', title = '', duration = 1, pool = null} = data;
-        if(!(pool instanceof cc.NodePool)) return;
-        this.label_title.string = title;
-        this._pool = pool;
-        this._icon = icon;
+    private _toast: any = null;
 
-        this.node.setPosition(0, 0);
+    onLoad(): void{
+        // 设置为常驻节点
+        cc.game.addPersistRootNode(this.node);
+        this.node.zIndex = 200;
 
-        if(icon === 'none'){
-            this.node_bg.setContentSize(250, 250);
-            this.sp_icon.node.active = false;
-            this.label_title.node.setPosition(0, 0);
-            this.label_title.node.setContentSize(200, 200);
-            this.label_title.fontSize = 32;
-            this.label_title.lineHeight = 35;
-            title = CommFunc.byteSplice(title, 0, 60);
+        this._toast = this.toast.getComponent('Comm_Toast');
+        this.toast.active = false;
 
-        }else if(icon === 'loading'){
-            
+        let size = cc.view.getVisibleSize();
+        this.node.setPosition(size.width / 2, size.height / 2);
 
-        }else if(icon === 'success'){
+        // 绑定
+        let obj = {
+            'showToast': this._showToast,
+            'hideToast': this._hideToast,
+            'showLoading': this._showToast,
+            'hideLoading': this._hideToast,
+            'showModal': this._showModal,
+        }
+        Comm_Main.bindViewMag(obj, this);
+    };
 
+    /**
+     * 显示toast
+     * @param obj Toast_Options | string
+     */
+    private _showToast(obj: Toast_Options | string){
+        let data = {
+            title: '',
+            icon: 'none',
+            image: null,
+            duration: 1.5,
+            mask: false,
+        }
+        if(typeof obj === 'string'){
+            data.title = obj;
+        }else{
+            data.title = obj.title;
+            data.icon = obj.icon ? obj.icon : data.icon;
+            data.image = obj.image ? obj.image : data.image;
+            data.duration = obj.duration ? obj.duration : data.duration;
+            data.mask = obj.mask ? obj.mask : data.mask;
         }
 
-        this.label_title.string = title;
-
-        this.node.opacity = 0;
-        this.node.stopAllActions();
-        this.node.runAction(cc.sequence(
-            cc.fadeIn(0.1),
-            cc.delayTime(duration),
-            cc.spawn(cc.moveBy(0.4, cc.v2(0, 100)), cc.fadeOut(0.4)),
-            cc.callFunc(() => {
-                this._pool.put(this.node);
-            }),
-        ));
+        this._toast.show(data);
     };
 
-    public unuse(){
-        this.label_title.string = '';
-        this._pool = null;
-        this.node.opacity = 0;
+    /**
+     * 隐藏toast
+     */
+    private _hideToast(){
+        this._toast.hide();
     };
+
+    /**
+     * 显示modal
+     */
+    private _showModal(){
+
+    }
 }

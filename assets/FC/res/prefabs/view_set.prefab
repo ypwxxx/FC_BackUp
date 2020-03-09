@@ -192,7 +192,7 @@
     "_enabled": true,
     "alignMode": 1,
     "_target": null,
-    "_alignFlags": 5,
+    "_alignFlags": 45,
     "_left": 0,
     "_right": 0,
     "_top": 0,
@@ -205,7 +205,7 @@
     "_isAbsBottom": true,
     "_isAbsHorizontalCenter": true,
     "_isAbsVerticalCenter": true,
-    "_originalWidth": 0,
+    "_originalWidth": 720,
     "_originalHeight": 1280,
     "_id": ""
   },
@@ -3857,6 +3857,9 @@
     },
     "node_start": {
       "__id__": 96
+    },
+    "adNode": {
+      "__id__": 106
     },
     "_id": ""
   },

@@ -209,7 +209,26 @@ class CommFunc {
         }
 
         return tempStr;
-    }
+    };
+
+    /**
+     * 创建spriteFrame
+     * @param url 路径
+     * @param callback 回调，创建的sp会传入
+     */
+    public createSpritFrame(url: string, callback: Function = null){
+        cc.loader.load(url, (err, assets) => {
+            if(err){
+                return console.log('url: ', url, '加载错误：', JSON.stringify(err));
+            }
+            if(assets instanceof cc.Texture2D){
+                let sp = new cc.SpriteFrame(assets);
+                if(typeof callback === 'function'){
+                    callback(sp);
+                }
+            }
+        })
+    };
 }
 
 export default CommFunc.getInstance();

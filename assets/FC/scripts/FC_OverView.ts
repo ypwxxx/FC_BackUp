@@ -3,6 +3,8 @@ import Comm_Binder from "../../myCommon/core/m_c/Comm_Binder";
 import { FC_NAME_VIEW } from "./FC_Constant";
 import FC_UserData from "./FC_UserData";
 import Comm_Main from "../../myCommon/Comm_Main";
+import Comm_Platform from "../../myCommon/utils/Comm_Platform";
+// const Share = require("Share");
 
 const {ccclass, property} = cc._decorator;
 
@@ -15,6 +17,8 @@ export default class FC_OverView extends cc.Component {
     rankItemPrefab: cc.Prefab = null;
     @property(cc.Node)
     rankBoard: cc.Node = null;
+    @property(cc.Node)
+    adNode: cc.Node = null;
 
     private _rankItems: FC_RankItemModel[] = [];
     private _count: number = 0;
@@ -36,7 +40,7 @@ export default class FC_OverView extends cc.Component {
         }
     };
   
-    public flushView(data: any){
+    public moveInBefore(data: any){
         this._count = data.length;
         for(let i = 0; i < 4; i++){
             let item = this._rankItems[i];
@@ -51,6 +55,8 @@ export default class FC_OverView extends cc.Component {
         this.animation.play();
         // 清除存档
         FC_UserData.getInstance().clear();
+
+        Comm_Platform.creatBanner(false, this.adNode, 'FC_1', 'banner4');
     };
 
     // 展示排行
@@ -80,11 +86,12 @@ export default class FC_OverView extends cc.Component {
     };
 
     public backHome(){
+        Comm_Platform.hideBanner();
         cc.director.loadScene(G.startScene);
     };
 
     public share(){
-
+        // Share.shareGameMsg("FC");
     };
 
     public restart(){
